@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Sustituciones Escolares</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles for the body */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header styling */
+        header {
+            background-color: #007bff; /* A professional blue */
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.2em;
+        }
+
+        /* Container styling for sections */
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        /* Form group styling */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input[type="date"],
+        .form-group input[type="time"],
+        .form-group select,
+        .form-group input[type="file"] { /* Added file input styling */
+            width: calc(100% - 20px); /* Adjust for padding */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+            box-sizing: border-box; /* Include padding and border in width */
+        }
+
+        /* Button styling */
+        button {
+            background-color: #28a745; /* Green button for adding */
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        button.delete {
+            background-color: #dc3545; /* Red button for deleting */
+        }
+
+        button.delete:hover {
+            background-color: #c82333;
+        }
+
+        button.import { /* Style for import button */
+            background-color: #007bff;
+        }
+
+        button.import:hover {
+            background-color: #0056b3;
+        }
+
+        button.export { /* Style for export button */
+            background-color: #ffc107; /* Yellow for export */
+            color: #333;
+        }
+
+        button.export:hover {
+            background-color: #e0a800;
+        }
+
+        /* Table styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #e9ecef;
+            font-weight: 600;
+        }
+
+        /* Message display styling */
+        .message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid #c3e6cb;
+            display: none; /* Hidden by default */
+        }
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+
+        /* Canvas specific styling */
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #f8f9fa; /* A slightly different background for the canvas */
+            display: block; /* For centering or layout control */
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .canvas-controls, .table-controls {
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            gap: 10px;
+            align-items: center;
+        }
+
+        .canvas-controls label, .table-controls label {
+            font-weight: 500;
+        }
+
+        .canvas-controls input[type="date"] {
+            flex-grow: 1; /* Allow date input to grow */
+            max-width: 200px; /* Limit max width for date input */
+        }
+
+        /* Custom Modal Styles */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .custom-modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .custom-modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .custom-modal-overlay.visible .custom-modal-content {
+            transform: translateY(0);
+        }
+
+        .custom-modal-content p {
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            color: #444;
+        }
+
+        .custom-modal-buttons button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .custom-modal-buttons .modal-ok-btn {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        .custom-modal-buttons .modal-ok-btn:hover {
+            background-color: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        .custom-modal-buttons .modal-cancel-btn {
+            background-color: #6C757D;
+            color: white;
+        }
+
+        .custom-modal-buttons .modal-cancel-btn:hover {
+            background-color: #5A6268;
+            transform: translateY(-1px);
+        }
+
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            header {
+                padding: 10px;
+                margin-bottom: 15px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            .container {
+                padding: 20px;
+            }
+            .form-group input[type="date"],
+            .form-group input[type="time"],
+            .form-group select,
+            .form-group input[type="file"] { /* Added file input styling */
+                width: 100%; /* Full width on small screens */
+            }
+            button {
+                width: 100%;
+                margin-bottom: 10px; /* Add margin between stacked buttons */
+            }
+            .canvas-controls, .table-controls {
+                flex-direction: column; /* Stack controls vertically */
+                align-items: stretch;
+            }
+            .canvas-controls input[type="date"],
+            .canvas-controls button,
+            .table-controls button {
+                width: 100%;
+                max-width: none; /* Remove max-width constraint */
+            }
+        }
+
+        /* Styles for dynamic schedule table */
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .schedule-table th, .schedule-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .schedule-table th {
+            background-color: #f2f2f2;
+        }
+
+        .schedule-table select {
+            width: 100%;
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        /* Styles for substitute teacher options */
+        .substitute-option.free {
+            color: green;
+        }
+        .substitute-option.support {
+            color: blue;
+            font-weight: bold;
+        }
+        .substitute-option.non-lectiva {
+            color: red;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Gestión de Sustituciones Escolares</h1>
+    </header>
+
+    <div class="container">
+        <h2>Registrar Nueva Sustitución</h2>
+        <div id="message" class="message"></div>
+        <div class="form-group">
+            <label for="substitution-date">Fecha:</label>
+            <input type="date" id="substitution-date" required>
+        </div>
+        <div class="form-group">
+            <label for="missing-teacher">Profesor que falta:</label>
+            <select id="missing-teacher" required></select>
+        </div>
+
+        <div id="missing-teacher-schedule-container" style="display:none;">
+            <h3>Horario del Profesor que Falta para la Fecha Seleccionada:</h3>
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Hora</th>
+                        <th>Asignatura / Actividad</th>
+                        <th>Clase / Grupo</th>
+                        <th>Sustituir con</th>
+                    </tr>
+                </thead>
+                <tbody id="missing-teacher-schedule-body">
+                    </tbody>
+            </table>
+            <p style="font-size: 0.8em; color: #666; margin-top: 10px;">
+                *Las horas en <span style="color:red; font-style:italic;">rojo</span> indican que el profesor sustituto tiene una actividad no lectiva.
+                Las horas en <span style="color:blue; font-weight:bold;">azul y negrita</span> indican que el profesor sustituto es de apoyo.
+                Las horas en <span style="color:green;">verde</span> indican que el profesor sustituto está libre.
+                Las horas <span style="text-decoration: line-through;">tachadas</span> indican que el profesor sustituto está ocupado con docencia directa.
+            </p>
+        </div>
+        <button id="add-substitution-btn">Añadir Sustitución(es)</button>
+    </div>
+
+    <div class="container">
+        <h2>Importar/Exportar Datos</h2>
+        <div class="form-group">
+            <label for="import-file">Seleccionar archivo JSON para importar:</label>
+            <input type="file" id="import-file" accept=".json">
+        </div>
+        <button id="import-data-btn" class="import">Importar Datos</button>
+        <button id="export-data-btn" class="export">Exportar Datos</button>
+        <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+            *La importación reemplazará los datos de maestros, clases y horarios. La exportación guardará todas las sustituciones y los datos importados.
+            **Los datos importados se guardan automáticamente para la próxima vez que uses la aplicación.**
+        </p>
+    </div>
+
+    <div class="container" id="registered-substitutions-container">
+        <div class="table-controls">
+            <h2>Sustituciones Registradas (Tabla)</h2>
+            <button id="toggle-table-btn">Ocultar Tabla</button>
+            <div class="filter-controls" style="margin-top: 10px; width: 100%; display: flex; flex-wrap: wrap; gap: 10px;">
+                <div class="form-group" style="flex-grow: 1;">
+                    <label for="filter-missing-teacher">Profesor que falta:</label>
+                    <select id="filter-missing-teacher"></select>
+                </div>
+                <div class="form-group" style="flex-grow: 1;">
+                    <label for="filter-substitute-teacher">Profesor que sustituye:</label>
+                    <select id="filter-substitute-teacher"></select>
+                </div>
+                <div class="form-group" style="flex-grow: 1;">
+                    <label for="filter-class-name">Clase/Grupo:</label>
+                    <select id="filter-class-name"></select>
+                </div>
+                <button id="apply-filter-btn" style="flex-grow: 1; max-width: 150px;">Aplicar Filtro</button>
+                <button id="clear-filter-btn" style="flex-grow: 1; max-width: 150px; background-color: #6c757d;">Limpiar Filtro</button>
+            </div>
+        </div>
+        <table id="substitutions-table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Falta</th>
+                    <th>Hora</th>
+                    <th>Sustituye</th>
+                    <th>Asignatura</th>
+                    <th>Clase</th>
+                    <th>Duración (h)</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+
+    <div class="container">
+        <h2>Visualización de Sustituciones (Canvas)</h2>
+        <div class="canvas-controls">
+            <label for="canvas-date-filter">Fecha para visualizar:</label>
+            <input type="date" id="canvas-date-filter">
+            <button id="draw-canvas-btn">Actualizar Vista Canvas</button>
+        </div>
+        <canvas id="substitution-canvas" width="800" height="600"></canvas>
+        <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+            *Esta vista muestra las sustituciones para la fecha seleccionada. Los bloques representan las sustituciones, con el profesor sustituto y la clase.
+        </p>
+    </div>
+
+    <div class="container">
+        <h2>Contabilidad de Horas de Sustitución</h2>
+        <table id="hours-accounting-table">
+            <thead>
+                <tr>
+                    <th>Profesor</th>
+                    <th>Total Horas Sustituidas</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+
+    <div id="customModalOverlay" class="custom-modal-overlay">
+        <div class="custom-modal-content">
+            <p id="customModalMessage"></p>
+            <div class="custom-modal-buttons">
+                <button id="modalOkBtn" class="modal-ok-btn">OK</button>
+                <button id="modalCancelBtn" class="modal-cancel-btn">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables to store application data
+        let teachers = []; // Display names for dropdowns
+        let classes = []; // Display names for dropdowns
+
+        // Detailed imported data from JSON
+        let importedTeachersData = [];
+        let importedTimeSlots = [];
+        let importedSchedules = [];
+        let importedSubjects = [];
+        let importedCourses = [];
+        let importedNonLectivaHours = [];
+
+        const substitutionsKey = 'schoolSubstitutions'; // Key for localStorage
+        const importedDataKey = 'importedSchoolData'; // Key for localStorage for imported JSON data
+
+        // --- Utility Functions ---
+
+        /**
+         * Displays a message to the user.
+         * @param {string} message - The message to display.
+         * @param {'success'|'error'|'info'} type - The type of message (for styling).
+         */
+        function showMessage(message, type = 'success') {
+            const messageElement = document.getElementById('message');
+            messageElement.textContent = message;
+            messageElement.className = `message ${type}`; // Add class for styling
+            messageElement.style.display = 'block';
+            setTimeout(() => {
+                messageElement.style.display = 'none';
+            }, 3000);
+        }
+
+        /**
+         * Populates the teacher and class dropdowns for both registration and filtering.
+         */
+        function loadDropdowns() {
+            const missingTeacherSelect = document.getElementById('missing-teacher');
+            const filterMissingTeacherSelect = document.getElementById('filter-missing-teacher');
+            const filterSubstituteTeacherSelect = document.getElementById('filter-substitute-teacher');
+            const filterClassSelect = document.getElementById('filter-class-name');
+
+            // Clear existing options for registration form
+            missingTeacherSelect.innerHTML = '<option value="">Seleccionar</option>';
+
+            // Clear existing options for filter form and add 'Todos' option
+            filterMissingTeacherSelect.innerHTML = '<option value="">Todos</option>';
+            filterSubstituteTeacherSelect.innerHTML = '<option value="">Todos</option>';
+            filterClassSelect.innerHTML = '<option value="">Todas</option>';
+
+
+            // Populate teacher dropdowns
+            teachers.forEach(teacher => {
+                const optionMissing = document.createElement('option');
+                optionMissing.value = teacher;
+                optionMissing.textContent = teacher;
+                missingTeacherSelect.appendChild(optionMissing);
+
+                const optionFilterMissing = optionMissing.cloneNode(true);
+                filterMissingTeacherSelect.appendChild(optionFilterMissing);
+
+                const optionFilterSubstitute = optionMissing.cloneNode(true);
+                filterSubstituteTeacherSelect.appendChild(optionFilterSubstitute);
+            });
+
+            // Populate class dropdown
+            classes.forEach(cls => {
+                const optionClass = document.createElement('option');
+                optionClass.value = cls;
+                optionClass.textContent = cls;
+                filterClassSelect.appendChild(optionClass);
+            });
+
+            // Set today's date in the date inputs by default
+            document.getElementById('substitution-date').valueAsDate = new Date();
+            document.getElementById('canvas-date-filter').valueAsDate = new Date();
+        }
+
+        /**
+         * Saves substitution data to localStorage.
+         * @param {Array<Object>} data - The array of substitutions to save.
+         */
+        function saveSubstitutions(data) {
+            localStorage.setItem(substitutionsKey, JSON.stringify(data));
+        }
+
+        /**
+         * Loads substitution data from localStorage.
+         * @returns {Array<Object>} The array of substitutions.
+         */
+        function loadSubstitutions() {
+            const data = localStorage.getItem(substitutionsKey);
+            return data ? JSON.parse(data) : [];
+        }
+
+        /**
+         * Saves imported school data (teachers, schedules, etc.) to localStorage.
+         */
+        function saveImportedData() {
+            const dataToSave = {
+                teachers: importedTeachersData,
+                timeSlots: importedTimeSlots,
+                schedules: importedSchedules,
+                subjects: importedSubjects,
+                courses: importedCourses,
+                nonLectivaHours: importedNonLectivaHours
+            };
+            localStorage.setItem(importedDataKey, JSON.stringify(dataToSave));
+        }
+
+        /**
+         * Loads imported school data from localStorage.
+         * @returns {boolean} True if data was loaded successfully, false otherwise.
+         */
+        function loadImportedData() {
+            const storedData = localStorage.getItem(importedDataKey);
+            if (storedData) {
+                try {
+                    const parsedData = JSON.parse(storedData);
+                    importedTeachersData = parsedData.teachers || [];
+                    importedTimeSlots = parsedData.timeSlots || [];
+                    importedSchedules = parsedData.schedules || [];
+                    importedSubjects = parsedData.subjects || [];
+                    importedCourses = parsedData.courses || [];
+                    importedNonLectivaHours = parsedData.nonLectivaHours || [];
+
+                    // Re-populate the 'teachers' and 'classes' global arrays for dropdowns
+                    teachers = importedTeachersData.map(t => `${t.firstName} ${t.lastName}`);
+                    classes = importedCourses.map(c => c.name);
+                    
+                    console.log('Datos importados cargados desde localStorage.');
+                    return true;
+                } catch (e) {
+                    console.error('Error al parsear los datos importados de localStorage:', e);
+                    localStorage.removeItem(importedDataKey); // Clear corrupted data
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Converts a time string (HH:MM) to total minutes from midnight.
+         * @param {string} timeStr - Time in "HH:MM" format.
+         * @returns {number} Total minutes from midnight.
+         */
+        function timeToMinutes(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
+        /**
+         * Calculates the duration in hours between two time strings.
+         * Handles cases where end time is on the next day (e.g., 23:00 to 01:00).
+         * @param {string} startTime - Start time in "HH:MM" format.
+         * @param {string} endTime - End time in "HH:MM" format.
+         * @returns {number} Duration in hours, rounded to two decimal places.
+         */
+        function calculateDuration(startTime, endTime) {
+            const startMinutes = timeToMinutes(startTime);
+            let endMinutes = timeToMinutes(endTime);
+            
+            if (endMinutes < startMinutes) { // If end time is earlier than start time, assume it's the next day
+                endMinutes += 24 * 60; // Add 24 hours in minutes
+            }
+            return parseFloat(((endMinutes - startMinutes) / 60).toFixed(2)); // Difference in hours
+        }
+
+        /**
+         * Renders the substitutions in the HTML table, applying filters.
+         */
+        function renderSubstitutions() {
+            let substitutions = loadSubstitutions();
+            const tableBody = document.querySelector('#substitutions-table tbody');
+            tableBody.innerHTML = ''; // Clear table before rendering
+
+            const filterMissingTeacher = document.getElementById('filter-missing-teacher').value;
+            const filterSubstituteTeacher = document.getElementById('filter-substitute-teacher').value;
+            const filterClassName = document.getElementById('filter-class-name').value;
+
+            // Apply filters
+            substitutions = substitutions.filter(sub => {
+                const matchesMissingTeacher = !filterMissingTeacher || sub.missingTeacher === filterMissingTeacher;
+                const matchesSubstituteTeacher = !filterSubstituteTeacher || sub.substituteTeacher === filterSubstituteTeacher;
+                const matchesClassName = !filterClassName || sub.className === filterClassName;
+                return matchesMissingTeacher && matchesSubstituteTeacher && matchesClassName;
+            });
+
+            // Sort by date and then by start time
+            substitutions.sort((a, b) => {
+                const dateA = new Date(a.date + ' ' + a.startTime);
+                const dateB = new Date(b.date + ' ' + b.startTime);
+                return dateA - dateB;
+            });
+
+            substitutions.forEach((sub, index) => {
+                const row = tableBody.insertRow();
+                row.insertCell().textContent = sub.date;
+                row.insertCell().textContent = sub.missingTeacher;
+                row.insertCell().textContent = `${sub.startTime} - ${sub.endTime}`; // Display time slot
+                row.insertCell().textContent = sub.substituteTeacher;
+                row.insertCell().textContent = sub.subjectName || 'N/A'; // Display subject name
+                row.insertCell().textContent = sub.className;
+                row.insertCell().textContent = sub.duration.toFixed(2); // Display with 2 decimal places
+
+                const actionsCell = row.insertCell();
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Eliminar';
+                deleteButton.classList.add('delete');
+                deleteButton.onclick = () => {
+                    // Use a custom modal for confirmation instead of alert/confirm
+                    showCustomConfirm('¿Estás seguro de que quieres eliminar esta sustitución?', (confirmed) => {
+                        if (confirmed) {
+                            deleteSubstitution(index);
+                        }
+                    });
+                };
+                actionsCell.appendChild(deleteButton);
+            });
+            renderHoursAccounting(); // Update accounting whenever substitutions are rendered
+            drawSubstitutionsOnCanvas(); // Also update the canvas view
+        }
+
+        /**
+         * Adds new substitutions from the dynamic schedule table.
+         */
+        function addSubstitution() {
+            const date = document.getElementById('substitution-date').value;
+            const missingTeacherName = document.getElementById('missing-teacher').value;
+            const scheduleRows = document.querySelectorAll('#missing-teacher-schedule-body tr');
+            let substitutionsToAdd = [];
+            let currentSubstitutions = loadSubstitutions();
+            let conflictsFound = false;
+
+            if (!missingTeacherName) {
+                showMessage('Por favor, selecciona el profesor que falta.', 'error');
+                return;
+            }
+
+            if (scheduleRows.length === 0) {
+                showMessage('No hay horario cargado para el profesor seleccionado o la fecha.', 'error');
+                return;
+            }
+
+            scheduleRows.forEach(row => {
+                const timeSlotId = row.dataset.timeSlotId;
+                const originalSubject = row.dataset.subjectName;
+                const originalClass = row.dataset.className;
+                const substituteSelect = row.querySelector('.substitute-select');
+                const substituteTeacher = substituteSelect ? substituteSelect.value : '';
+
+                if (substituteTeacher && substituteTeacher !== "no-sustituir") {
+                    const timeSlot = importedTimeSlots.find(ts => ts.id === timeSlotId);
+                    if (timeSlot) {
+                        const newSubstitution = {
+                            date,
+                            missingTeacher: missingTeacherName,
+                            substituteTeacher: substituteTeacher,
+                            className: originalClass,
+                            subjectName: originalSubject,
+                            startTime: timeSlot.startTime,
+                            endTime: timeSlot.endTime,
+                            duration: calculateDuration(timeSlot.startTime, timeSlot.endTime)
+                        };
+
+                        // Check for conflicts with existing substitutions
+                        const isConflicting = currentSubstitutions.some(existingSub =>
+                            existingSub.date === newSubstitution.date &&
+                            existingSub.substituteTeacher === newSubstitution.substituteTeacher &&
+                            (
+                                // Check for time overlap
+                                (timeToMinutes(newSubstitution.startTime) < timeToMinutes(existingSub.endTime) &&
+                                 timeToMinutes(newSubstitution.endTime) > timeToMinutes(existingSub.startTime))
+                            )
+                        );
+
+                        if (isConflicting) {
+                            conflictsFound = true;
+                            console.warn(`Conflicto detectado para ${newSubstitution.substituteTeacher} en ${newSubstitution.date} de ${newSubstitution.startTime} a ${newSubstitution.endTime}. No se añadirá.`);
+                            // Optionally, you could show a message for each conflict, but a summary is better.
+                        } else {
+                            substitutionsToAdd.push(newSubstitution);
+                        }
+                    }
+                }
+            });
+
+            if (substitutionsToAdd.length === 0 && !conflictsFound) {
+                showMessage('No se ha seleccionado ningún sustituto para ninguna hora.', 'error');
+                return;
+            }
+
+            if (substitutionsToAdd.length === 0 && conflictsFound) {
+                showMessage('No se pudieron añadir sustituciones debido a conflictos de horario.', 'error');
+                return;
+            }
+
+            // Filter out duplicates that might have been selected multiple times in the UI
+            const uniqueSubstitutionsToAdd = [];
+            substitutionsToAdd.forEach(newSub => {
+                const isAlreadyAdded = uniqueSubstitutionsToAdd.some(addedSub =>
+                    addedSub.date === newSub.date &&
+                    addedSub.missingTeacher === newSub.missingTeacher &&
+                    addedSub.substituteTeacher === newSub.substituteTeacher &&
+                    addedSub.startTime === newSub.startTime &&
+                    addedSub.endTime === newSub.endTime
+                );
+                if (!isAlreadyAdded) {
+                    uniqueSubstitutionsToAdd.push(newSub);
+                }
+            });
+
+
+            currentSubstitutions.push(...uniqueSubstitutionsToAdd);
+            saveSubstitutions(currentSubstitutions);
+            renderSubstitutions();
+
+            if (conflictsFound) {
+                showMessage(`Se añadieron ${uniqueSubstitutionsToAdd.length} sustituciones. Se encontraron conflictos para otras y no se añadieron.`, 'info');
+            } else {
+                showMessage('Sustitución(es) añadida(s) con éxito.');
+            }
+            
+            // Clear the form (except date, for convenience)
+            document.getElementById('missing-teacher').value = '';
+            document.getElementById('missing-teacher-schedule-container').style.display = 'none'; // Hide schedule
+            document.getElementById('missing-teacher-schedule-body').innerHTML = ''; // Clear schedule
+        }
+
+        /**
+         * Deletes a substitution by its index in the array.
+         * @param {number} indexToDelete - The index of the substitution to delete.
+         */
+        function deleteSubstitution(indexToDelete) {
+            let substitutions = loadSubstitutions();
+            // Filter to create a new array without the element to delete
+            substitutions = substitutions.filter((_, index) => index !== indexToDelete);
+            saveSubstitutions(substitutions);
+            renderSubstitutions();
+            showMessage('Sustitución eliminada con éxito.');
+        }
+
+        /**
+         * Renders the hours accounting table.
+         */
+        function renderHoursAccounting() {
+            const substitutions = loadSubstitutions();
+            const hoursByTeacher = {};
+
+            substitutions.forEach(sub => {
+                const teacher = sub.substituteTeacher;
+                const duration = sub.duration;
+                if (hoursByTeacher[teacher]) {
+                    hoursByTeacher[teacher] += duration;
+                } else {
+                    hoursByTeacher[teacher] = duration;
+                }
+            });
+
+            const tableBody = document.querySelector('#hours-accounting-table tbody');
+            tableBody.innerHTML = ''; // Clear table
+
+            // Convert to array for sorting and rendering
+            const sortedTeachers = Object.keys(hoursByTeacher).sort();
+
+            sortedTeachers.forEach(teacher => {
+                const row = tableBody.insertRow();
+                row.insertCell().textContent = teacher;
+                row.insertCell().textContent = hoursByTeacher[teacher].toFixed(2); // Display with 2 decimal places
+            });
+        }
+
+        // --- Canvas Drawing Functions ---
+        const canvas = document.getElementById('substitution-canvas');
+        const ctx = canvas.getContext('2d');
+
+        const CANVAS_PADDING_X = 30;
+        const CANVAS_PADDING_Y = 30;
+        const TIME_COLUMN_WIDTH = 80;
+        const MIN_HOUR = 8; // School starts at 8 AM
+        const MAX_HOUR = 18; // School ends at 6 PM (18:00)
+        const TOTAL_HOURS = MAX_HOUR - MIN_HOUR; // 10 hours
+
+        /**
+         * Converts a time string (HH:MM) to a fraction of the day's total hours.
+         * @param {string} timeStr - Time in "HH:MM" format.
+         * @returns {number} Fraction of total hours from MIN_HOUR.
+         */
+        function timeToFraction(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return (hours + minutes / 60 - MIN_HOUR) / TOTAL_HOURS;
+        }
+
+        /**
+         * Draws the substitutions on the canvas for the selected date.
+         */
+        function drawSubstitutionsOnCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear previous drawings
+
+            const selectedDate = document.getElementById('canvas-date-filter').value;
+            if (!selectedDate) {
+                ctx.fillStyle = '#666';
+                ctx.font = '16px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Selecciona una fecha para visualizar las sustituciones.', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+
+            let substitutionsForDate = loadSubstitutions().filter(sub => sub.date === selectedDate);
+
+            if (substitutionsForDate.length === 0) {
+                ctx.fillStyle = '#666';
+                ctx.font = '16px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('No hay sustituciones registradas para esta fecha.', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+
+            // Sort substitutions by start time for lane assignment
+            substitutionsForDate.sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+
+            // Calculate usable drawing area
+            const drawingWidth = canvas.width - 2 * CANVAS_PADDING_X - TIME_COLUMN_WIDTH;
+            const drawingHeight = canvas.height - 2 * CANVAS_PADDING_Y;
+
+            // --- Lane Assignment Algorithm ---
+            // `lanes` array stores the end time (in minutes) of the last event placed in each lane.
+            // This helps find the earliest available lane for a new event.
+            const lanes = []; // Stores objects: { endTimeMinutes: number, color: string }
+            let maxLanesUsed = 0; // To determine the total width division
+
+            substitutionsForDate.forEach(sub => {
+                const subStartTimeMinutes = timeToMinutes(sub.startTime);
+                const subEndTimeMinutes = timeToMinutes(sub.endTime);
+
+                let assignedLaneIndex = -1;
+
+                // Try to find an existing lane where this substitution can fit without overlapping
+                for (let i = 0; i < lanes.length; i++) {
+                    if (subStartTimeMinutes >= lanes[i].endTimeMinutes) {
+                        assignedLaneIndex = i;
+                        break;
+                    }
+                }
+
+                if (assignedLaneIndex !== -1) {
+                    // Place in existing lane
+                    sub.laneIndex = assignedLaneIndex;
+                    lanes[assignedLaneIndex].endTimeMinutes = subEndTimeMinutes;
+                } else {
+                    // No suitable lane found, create a new one
+                    sub.laneIndex = lanes.length;
+                    lanes.push({ endTimeMinutes: subEndTimeMinutes, color: `hsl(${Math.random() * 360}, 70%, 80%)` });
+                }
+                maxLanesUsed = Math.max(maxLanesUsed, sub.laneIndex + 1); // Track maximum lanes used
+            });
+
+            // Calculate actual lane width based on max lanes used
+            const lanePadding = 5; // Horizontal padding between lanes
+            const totalLaneSpacing = (maxLanesUsed > 0 ? (maxLanesUsed - 1) * lanePadding : 0);
+            const effectiveDrawingWidthForLanes = drawingWidth - totalLaneSpacing;
+            const laneWidth = (maxLanesUsed > 0) ? (effectiveDrawingWidthForLanes / maxLanesUsed) : drawingWidth;
+
+
+            // Draw time axis (vertical)
+            ctx.fillStyle = '#555';
+            ctx.font = '14px Inter';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= TOTAL_HOURS; i++) {
+                const hour = MIN_HOUR + i;
+                const y = CANVAS_PADDING_Y + (i / TOTAL_HOURS) * drawingHeight;
+                ctx.fillText(`${hour}:00`, CANVAS_PADDING_X + TIME_COLUMN_WIDTH - 5, y + 5);
+                // Draw horizontal grid lines
+                ctx.strokeStyle = '#e0e0e0';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(CANVAS_PADDING_X + TIME_COLUMN_WIDTH, y);
+                ctx.lineTo(canvas.width - CANVAS_PADDING_X, y);
+                ctx.stroke();
+            }
+
+            // Draw substitutions in their assigned lanes
+            substitutionsForDate.forEach(sub => {
+                const startFraction = timeToFraction(sub.startTime);
+                const endFraction = timeToFraction(sub.endTime);
+
+                const blockHeight = (endFraction - startFraction) * drawingHeight;
+                const blockY = CANVAS_PADDING_Y + startFraction * drawingHeight;
+                
+                // Calculate blockX based on laneIndex
+                const blockX = CANVAS_PADDING_X + TIME_COLUMN_WIDTH + (sub.laneIndex * (laneWidth + lanePadding));
+                const blockActualWidth = laneWidth;
+
+                // Use the color assigned to the lane, or generate if not using lane colors
+                const blockColor = lanes[sub.laneIndex] ? lanes[sub.laneIndex].color : `hsl(${Math.random() * 360}, 70%, 80%)`;
+                ctx.fillStyle = blockColor;
+                ctx.fillRect(blockX, blockY, blockActualWidth, blockHeight);
+
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(blockX, blockY, blockActualWidth, blockHeight);
+
+                // Add text to the block
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 14px Inter';
+                ctx.textAlign = 'left';
+                const textPadding = 5;
+
+                // Limit text to fit within the block's actual width
+                const maxTextWidth = blockActualWidth - 2 * textPadding;
+                const lineHeight = 18;
+                let currentTextY = blockY + textPadding; // Start text at top of block
+
+                // Draw substitute teacher
+                let substituteText = `Sust: ${sub.substituteTeacher}`;
+                let wrappedSubstituteText = wrapText(ctx, substituteText, blockX + textPadding, currentTextY, maxTextWidth, lineHeight);
+                wrappedSubstituteText.forEach(line => {
+                    if (currentTextY + lineHeight <= blockY + blockHeight - textPadding) { // Check if text fits vertically
+                        ctx.fillText(line, blockX + textPadding, currentTextY += lineHeight);
+                    }
+                });
+
+                // Draw missing teacher
+                let missingText = `Falta: ${sub.missingTeacher}`;
+                let wrappedMissingText = wrapText(ctx, missingText, blockX + textPadding, currentTextY, maxTextWidth, lineHeight);
+                wrappedMissingText.forEach(line => {
+                    if (currentTextY + lineHeight <= blockY + blockHeight - textPadding) { // Check if text fits vertically
+                        ctx.fillText(line, blockX + textPadding, currentTextY += lineHeight);
+                    }
+                });
+
+                // Draw class
+                let classText = `Clase: ${sub.className}`;
+                let wrappedClassText = wrapText(ctx, classText, blockX + textPadding, currentTextY, maxTextWidth, lineHeight);
+                wrappedClassText.forEach(line => {
+                    if (currentTextY + lineHeight <= blockY + blockHeight - textPadding) { // Check if text fits vertically
+                        ctx.fillText(line, blockX + textPadding, currentTextY += lineHeight);
+                    }
+                });
+            });
+        }
+
+        /**
+         * Helper function to wrap text within a given width on canvas.
+         * @param {CanvasRenderingContext2D} context - The canvas rendering context.
+         * @param {string} text - The text to wrap.
+         * @param {number} x - The x-coordinate to start drawing text.
+         * @param {number} y - The y-coordinate to start drawing text.
+         * @param {number} maxWidth - The maximum width for a line of text.
+         * @param {number} lineHeight - The height of each line.
+         * @returns {Array<string>} An array of lines.
+         */
+        function wrapText(context, text, x, y, maxWidth, lineHeight) {
+            const words = text.split(' ');
+            let line = '';
+            const lines = [];
+
+            for (let n = 0; n < words.length; n++) {
+                const testLine = line + words[n] + ' ';
+                const metrics = context.measureText(testLine);
+                const testWidth = metrics.width;
+                if (testWidth > maxWidth && n > 0) {
+                    lines.push(line);
+                    line = words[n] + ' ';
+                } else {
+                    line = testLine;
+                }
+            }
+            lines.push(line);
+            return lines;
+        }
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadImportedData(); // Try to load saved imported data first
+            loadDropdowns();
+            renderSubstitutions(); // This will also call drawSubstitutionsOnCanvas
+            // If there's imported data, also try to render the missing teacher schedule
+            // in case a teacher is pre-selected or a date is changed.
+            if (importedTeachersData.length > 0) {
+                renderMissingTeacherSchedule(); // Call this to populate initial schedule if data exists
+            }
+        });
+
+        // Event Listeners
+        document.getElementById('add-substitution-btn').addEventListener('click', addSubstitution);
+        document.getElementById('draw-canvas-btn').addEventListener('click', drawSubstitutionsOnCanvas);
+        document.getElementById('canvas-date-filter').addEventListener('change', drawSubstitutionsOnCanvas);
+
+        // Event listeners for dynamic schedule rendering
+        document.getElementById('missing-teacher').addEventListener('change', renderMissingTeacherSchedule);
+        document.getElementById('substitution-date').addEventListener('change', renderMissingTeacherSchedule);
+
+        // Event listeners for table filtering
+        document.getElementById('apply-filter-btn').addEventListener('click', renderSubstitutions);
+        document.getElementById('clear-filter-btn').addEventListener('click', () => {
+            document.getElementById('filter-missing-teacher').value = '';
+            document.getElementById('filter-substitute-teacher').value = '';
+            document.getElementById('filter-class-name').value = '';
+            renderSubstitutions(); // Re-render with cleared filters
+        });
+
+
+        // --- Toggle Table Visibility ---
+        const registeredSubstitutionsContainer = document.getElementById('registered-substitutions-container');
+        const toggleTableBtn = document.getElementById('toggle-table-btn');
+        let isTableVisible = true; // Initial state
+
+        toggleTableBtn.addEventListener('click', () => {
+            if (isTableVisible) {
+                registeredSubstitutionsContainer.style.display = 'none';
+                toggleTableBtn.textContent = 'Mostrar Tabla';
+            } else {
+                registeredSubstitutionsContainer.style.display = 'block';
+                toggleTableBtn.textContent = 'Ocultar Tabla';
+            }
+            isTableVisible = !isTableVisible;
+        });
+
+
+        // Custom Modal Logic
+        const customModalOverlay = document.getElementById('customModalOverlay');
+        const customModalMessage = document.getElementById('customModalMessage');
+        const modalOkBtn = document.getElementById('modalOkBtn');
+        const modalCancelBtn = document.getElementById('modalCancelBtn');
+        let currentModalCallback = null;
+
+        /**
+         * Shows a custom confirmation modal.
+         * @param {string} message - The message to display.
+         * @param {function(boolean): void} callback - The callback function (true if confirmed, false if cancelled).
+         */
+        function showCustomConfirm(message, callback) {
+            customModalMessage.textContent = message;
+            currentModalCallback = callback;
+            modalOkBtn.style.display = 'inline-block';
+            modalCancelBtn.style.display = 'inline-block';
+            customModalOverlay.classList.add('visible');
+        }
+
+        modalOkBtn.onclick = () => {
+            customModalOverlay.classList.remove('visible');
+            if (currentModalCallback) {
+                currentModalCallback(true);
+            }
+        };
+
+        modalCancelBtn.onclick = () => {
+            customModalOverlay.classList.remove('visible');
+            if (currentModalCallback) {
+                currentModalCallback(false);
+            }
+        };
+
+        /**
+         * Renders the missing teacher's schedule dynamically and populates substitute dropdowns.
+         */
+        function renderMissingTeacherSchedule() {
+            const missingTeacherName = document.getElementById('missing-teacher').value;
+            const substitutionDateStr = document.getElementById('substitution-date').value;
+            const scheduleBody = document.getElementById('missing-teacher-schedule-body');
+            const scheduleContainer = document.getElementById('missing-teacher-schedule-container');
+
+            scheduleBody.innerHTML = ''; // Clear previous schedule
+
+            if (!missingTeacherName || !substitutionDateStr || importedTeachersData.length === 0 || importedSchedules.length === 0 || importedTimeSlots.length === 0) {
+                scheduleContainer.style.display = 'none';
+                return;
+            }
+
+            const selectedDate = new Date(substitutionDateStr);
+            const dayOfWeek = selectedDate.getDay(); 
+            const jsonDayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek; // Adjust dayOfWeek to match JSON (Monday=1, Sunday=7)
+
+            const missingTeacher = importedTeachersData.find(t => `${t.firstName} ${t.lastName}` === missingTeacherName);
+
+            if (!missingTeacher) {
+                scheduleContainer.style.display = 'none';
+                return;
+            }
+
+            const teacherId = missingTeacher.id;
+
+            // Get all time slots for the selected day for the missing teacher
+            const teacherScheduleEntries = importedSchedules.filter(
+                schedule => schedule.teacherId === teacherId && schedule.dayOfWeek === jsonDayOfWeek
+            );
+
+            const teacherNonLectivaEntries = importedNonLectivaHours.filter(
+                nonLectiva => nonLectiva.teacherId === teacherId && nonLectiva.dayOfWeek === jsonDayOfWeek
+            );
+
+            // Combine and sort all relevant time slots (lectivas and non-lectivas)
+            const allTeacherTimeSlotIds = [
+                ...new Set([
+                    ...teacherScheduleEntries.map(s => s.timeSlotId),
+                    ...teacherNonLectivaEntries.map(nl => nl.timeSlotId)
+                ])
+            ];
+
+            const sortedTimeSlots = importedTimeSlots
+                .filter(ts => allTeacherTimeSlotIds.includes(ts.id))
+                .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+
+            if (sortedTimeSlots.length === 0) {
+                scheduleContainer.style.display = 'none';
+                showMessage('No se encontraron horas lectivas o no lectivas para este profesor en la fecha seleccionada.', 'info');
+                return;
+            }
+
+            scheduleContainer.style.display = 'block'; // Show the schedule container
+
+            sortedTimeSlots.forEach(timeSlot => {
+                const row = scheduleBody.insertRow();
+                row.dataset.timeSlotId = timeSlot.id; // Store timeSlotId for later
+                
+                let subjectName = '';
+                let className = '';
+                let isLectiva = false;
+
+                // Check for regular schedule
+                const scheduleEntry = teacherScheduleEntries.find(s => s.timeSlotId === timeSlot.id);
+                if (scheduleEntry) {
+                    isLectiva = true;
+                    const subject = importedSubjects.find(sub => sub.id === scheduleEntry.subjectId);
+                    subjectName = subject ? subject.name : 'Desconocida';
+                    const course = importedCourses.find(c => c.id === scheduleEntry.courseId);
+                    className = course ? course.name : 'Desconocida';
+                    if (scheduleEntry.groupName) {
+                        className += ` (${scheduleEntry.groupName})`;
+                    }
+                }
+
+                // Check for non-lectiva
+                const nonLectivaEntry = teacherNonLectivaEntries.find(nl => nl.timeSlotId === timeSlot.id);
+                if (nonLectivaEntry) {
+                    subjectName = `No Lectiva: ${nonLectivaEntry.description || 'Actividad'}`;
+                    className = 'N/A'; // No class for non-lectiva
+                    isLectiva = false; // Mark as not direct teaching
+                }
+
+                row.insertCell().textContent = `${timeSlot.startTime} - ${timeSlot.endTime}`;
+                row.insertCell().textContent = subjectName;
+                row.insertCell().textContent = className;
+
+                const substituteCell = row.insertCell();
+                const substituteSelect = document.createElement('select');
+                substituteSelect.classList.add('substitute-select');
+                substituteSelect.id = `substitute-select-${timeSlot.id}`; // Unique ID for each select
+
+                const defaultOption = document.createElement('option');
+                defaultOption.value = "no-sustituir";
+                defaultOption.textContent = "No sustituir";
+                substituteSelect.appendChild(defaultOption);
+
+                // Populate substitute options
+                teachers.forEach(substituteTeacherName => {
+                    // Do not allow the missing teacher to substitute themselves
+                    if (substituteTeacherName === missingTeacherName) {
+                        return;
+                    }
+
+                    const option = document.createElement('option');
+                    option.value = substituteTeacherName;
+                    option.textContent = substituteTeacherName;
+
+                    // Determine substitute's availability for this time slot
+                    const subTeacher = importedTeachersData.find(t => `${t.firstName} ${t.lastName}` === substituteTeacherName);
+                    if (subTeacher) {
+                        const subTeacherId = subTeacher.id;
+
+                        // Check if substitute has a schedule for this time slot
+                        const subSchedule = importedSchedules.find(
+                            s => s.teacherId === subTeacherId && s.dayOfWeek === jsonDayOfWeek && s.timeSlotId === timeSlot.id
+                        );
+                        // Check if substitute has a non-lectiva hour for this time slot
+                        const subNonLectiva = importedNonLectivaHours.find(
+                            nl => nl.teacherId === subTeacherId && nl.dayOfWeek === jsonDayOfWeek && nl.timeSlotId === timeSlot.id
+                        );
+
+                        if (subNonLectiva) {
+                            option.classList.add('substitute-option', 'non-lectiva');
+                            option.textContent += ' (No Lectiva)';
+                        } else if (subSchedule) {
+                            if (subSchedule.isSupportTeacher) {
+                                const supportSubject = importedSubjects.find(sub => sub.id === subSchedule.subjectId);
+                                const supportCourse = importedCourses.find(c => c.id === subSchedule.courseId);
+                                let supportClassInfo = supportCourse ? supportCourse.name : 'Desconocida';
+                                if (subSchedule.groupName) {
+                                    supportClassInfo += ` (${subSchedule.groupName})`;
+                                }
+                                option.classList.add('substitute-option', 'support');
+                                option.textContent += ` (Apoyo: ${supportSubject ? supportSubject.name : ''} - ${supportClassInfo})`;
+                            } else {
+                                // Busy with regular teaching
+                                option.textContent += ' (Ocupado)';
+                                option.disabled = true; // Disable if busy with regular teaching
+                                option.style.textDecoration = 'line-through'; // Add strikethrough for busy
+                            }
+                        } else {
+                            // Free
+                            option.classList.add('substitute-option', 'free');
+                            option.textContent += ' (Libre)';
+                        }
+                    }
+                    substituteSelect.appendChild(option);
+                });
+                substituteCell.appendChild(substituteSelect);
+
+                // Store original subject and class for later retrieval during addSubstitution
+                row.dataset.subjectName = subjectName;
+                row.dataset.className = className;
+            });
+        }
+
+
+        // --- Import Data Logic ---
+        document.getElementById('import-data-btn').addEventListener('click', () => {
+            const fileInput = document.getElementById('import-file');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showMessage('Por favor, selecciona un archivo JSON para importar.', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                try {
+                    const fullImportedData = JSON.parse(event.target.result);
+                    let dataImported = false;
+
+                    // Determine if the imported file is a full backup (exported by the app)
+                    // or a raw schedule file (like horarios_backup_2025-05-24T15-03-16.755Z.json)
+                    const actualImportData = fullImportedData.importedData || fullImportedData;
+
+                    // Check for and load substitutions data (only present in app's export)
+                    if (fullImportedData.substitutions && Array.isArray(fullImportedData.substitutions)) {
+                        saveSubstitutions(fullImportedData.substitutions);
+                        dataImported = true;
+                    }
+
+                    // Load imported school data (teachers, schedules, etc.)
+                    // This will work for both the app's export format and the raw schedule format
+                    if (actualImportData.teachers && Array.isArray(actualImportData.teachers)) {
+                        importedTeachersData = actualImportData.teachers;
+                        teachers = importedTeachersData.map(t => `${t.firstName} ${t.lastName}`);
+                        dataImported = true;
+                    }
+                    if (actualImportData.timeSlots && Array.isArray(actualImportData.timeSlots)) {
+                        importedTimeSlots = actualImportData.timeSlots;
+                        dataImported = true;
+                    }
+                    if (actualImportData.schedules && Array.isArray(actualImportData.schedules)) {
+                        importedSchedules = actualImportData.schedules;
+                        dataImported = true;
+                    }
+                    if (actualImportData.subjects && Array.isArray(actualImportData.subjects)) {
+                        importedSubjects = actualImportData.subjects;
+                        dataImported = true;
+                    }
+                    if (actualImportData.courses && Array.isArray(actualImportData.courses)) {
+                        importedCourses = actualImportData.courses;
+                        classes = importedCourses.map(c => c.name);
+                        dataImported = true;
+                    }
+                    if (actualImportData.nonLectivaHours && Array.isArray(actualImportData.nonLectivaHours)) {
+                        importedNonLectivaHours = actualImportData.nonLectivaHours;
+                        dataImported = true;
+                    }
+
+                    // If data was successfully processed, save it to localStorage
+                    if (dataImported) {
+                        saveImportedData(); // Save the individual components to localStorage
+                        showMessage('Datos importados con éxito (Sustituciones, Maestros, Clases, Horarios, etc.).');
+                    } else {
+                        showMessage('El archivo JSON no contiene datos válidos para importar.', 'error');
+                    }
+                    
+                    // Refresh UI components
+                    loadDropdowns();
+                    renderSubstitutions(); // This will also call drawSubstitutionsOnCanvas
+                    renderMissingTeacherSchedule(); 
+
+                } catch (e) {
+                    showMessage(`Error al procesar el archivo JSON: ${e.message}`, 'error');
+                }
+            };
+
+            reader.onerror = function() {
+                showMessage('Error al leer el archivo.', 'error');
+            };
+
+            reader.readAsText(file);
+        });
+
+        // --- Export Data Logic ---
+        document.getElementById('export-data-btn').addEventListener('click', () => {
+            const allSubstitutions = loadSubstitutions();
+            const allImportedData = {
+                teachers: importedTeachersData,
+                timeSlots: importedTimeSlots,
+                schedules: importedSchedules,
+                subjects: importedSubjects,
+                courses: importedCourses,
+                nonLectivaHours: importedNonLectivaHours
+            };
+
+            const dataToExport = {
+                substitutions: allSubstitutions,
+                importedData: allImportedData
+            };
+
+            const jsonString = JSON.stringify(dataToExport, null, 2); // Pretty print JSON
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            const date = new Date();
+            const dateStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+            a.download = `SUSTITUCIONES_backup_${dateStr}.json`;
+            document.body.appendChild(a); // Append to body to make it clickable
+            a.click(); // Programmatically click the link
+            document.body.removeChild(a); // Clean up
+            URL.revokeObjectURL(url); // Release the object URL
+
+            showMessage('Datos exportados con éxito.', 'success');
+        });
+    </script>
+</body>
+</html>

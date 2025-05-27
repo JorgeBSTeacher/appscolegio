@@ -1,0 +1,3042 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Horarios Escolares</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.2em;
+        }
+
+        .nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 25px;
+            justify-content: center;
+        }
+
+        .nav-buttons button {
+            padding: 12px 25px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-buttons button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: 1fr; /* Default to single column */
+            gap: 25px;
+        }
+
+        section {
+            display: none; /* Hidden by default */
+        }
+
+        section.visible {
+            display: block; /* Show when visible */
+            grid-column: 1 / -1; /* Span full width */
+        }
+
+        .card {
+            background-color: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        h2 {
+            font-size: 1.8em;
+            color: #333;
+            margin-top: 0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        h3 {
+            font-size: 1.3em;
+            color: #555;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            color: #555;
+            min-width: 80px; /* Adjust for better alignment */
+        }
+
+        .input-group input[type="text"],
+        .input-group input[type="time"],
+        .input-group input[type="date"],
+        .input-group select {
+            flex-grow: 1;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            min-width: 150px;
+        }
+
+        .input-group input[type="text"]:focus,
+        .input-group input[type="time"]:focus,
+        .input-group input[type="date"]:focus,
+        .input-group select:focus {
+            border-color: #007BFF;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+
+        .input-group button {
+            padding: 10px 20px;
+            background-color: #28A745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group button:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .input-group input[type="checkbox"] {
+            transform: scale(1.3);
+            margin-left: 5px;
+            margin-right: 10px;
+        }
+
+        .list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .list li {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95em;
+            transition: background-color 0.2s ease;
+        }
+
+        .list li:hover {
+            background-color: #f0f0f0;
+        }
+
+        .list li .delete-btn {
+            background-color: #DC3545;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .list li .delete-btn:hover {
+            background-color: #C82333;
+            transform: scale(1.05);
+        }
+
+        .divider {
+            border-top: 1px solid #eee;
+            margin: 30px 0;
+        }
+
+        /* Estilos para el horario (adaptados del anterior y mejorados) */
+        .schedule-grid-week {
+            display: grid;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+
+        .grid-header-cell {
+            background-color: #e0e0e0;
+            font-weight: bold;
+            padding: 12px;
+            text-align: center;
+            border-right: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+            color: #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+        }
+        .grid-header-cell:last-child {
+            border-right: none;
+        }
+
+        .time-slot-label {
+            background-color: #f0f0f0;
+            font-weight: 500;
+            padding: 12px;
+            text-align: center;
+            border-right: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85em;
+        }
+        .time-slot-label:last-child {
+            border-bottom: none;
+        }
+
+        .schedule-cell {
+            border: 1px solid #eee;
+            padding: 8px;
+            min-height: 80px; /* Increased for better content fit */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.8em;
+            position: relative;
+            background-color: #fff;
+            transition: background-color 0.2s ease;
+            word-break: break-word; /* Ensure long text wraps */
+        }
+
+        .schedule-cell:hover {
+            background-color: #eaf6ff; /* Light blue on hover */
+        }
+
+        .schedule-cell .delete-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background-color: #DC3545;
+            color: white;
+            border: none;
+            padding: 3px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.65em;
+            opacity: 0.8;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .schedule-cell .delete-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        /* Colores para las asignaturas (manteniendo algunos ejemplos y añadiendo más) */
+        .subject-matematicas { background-color: #FFE0B2; } /* Light Orange */
+        .subject-lengua { background-color: #C8E6C9; } /* Light Green */
+        .subject-musica { background-color: #E1BEE7; } /* Light Purple */
+        .subject-ciencias { background-color: #BBDEFB; } /* Light Blue */
+        .subject-arte { background-color: #FFF9C4; } /* Light Yellow */
+        .subject-educacion-fisica { background-color: #DCEDC8; } /* Light Lime Green */
+        .subject-ingles { background-color: #FFCDD2; } /* Light Red/Rose */
+        .subject-frances { background-color: #F8BBD0; } /* Light Pink */
+        .subject-religion { background-color: #DCE775; } /* Light Greenish Yellow */
+        .subject-sociales { background-color: #B2EBF2; } /* Light Cyan */
+        .subject-tecnologia { background-color: #B2DFDB; } /* Light Teal */
+        .subject-historia { background-color: #FFECB3; } /* Light Amber */
+
+        .non-lectiva {
+            background-color: #D1E7DD; /* A subtle green for non-lectiva */
+            font-style: italic;
+            color: #4CAF50;
+        }
+
+        .recess-slot {
+            background-color: #FFECB3; /* Light Yellow for recess */
+            border: 1px dashed #FFD54F;
+            color: #FF9800;
+            font-weight: bold;
+        }
+
+        .recess-guard {
+            background-color: #C8E6C9; /* Light Green for recess guard */
+            border: 1px solid #4CAF50;
+            color: #2E7D32;
+            font-weight: bold;
+        }
+
+        .assign-class {
+            align-items: flex-start; /* Align labels/inputs at the start */
+            display: flex; /* Revert to flex */
+            flex-wrap: wrap; /* Allow wrapping */
+            gap: 12px; /* Original gap */
+        }
+        .assign-class label {
+            flex-basis: auto; /* Original flex-basis */
+            margin-right: 5px; /* Original margin */
+            margin-bottom: 0; /* Original margin */
+            min-width: unset;
+        }
+        .assign-class select, .assign-class input {
+            margin-right: 10px; /* Original margin */
+            flex-basis: 180px; /* Original flex-basis */
+            min-width: 150px;
+        }
+        .assign-class button {
+            flex-basis: auto; /* Original flex-basis */
+        }
+
+        /* Estilos para el modal personalizado */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .custom-modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .custom-modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .custom-modal-overlay.visible .custom-modal-content {
+            transform: translateY(0);
+        }
+
+        .custom-modal-content p {
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            color: #444;
+        }
+
+        .custom-modal-buttons button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .custom-modal-buttons .modal-ok-btn {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        .custom-modal-buttons .modal-ok-btn:hover {
+            background-color: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        .custom-modal-buttons .modal-cancel-btn {
+            background-color: #6C757D;
+            color: white;
+        }
+
+        .custom-modal-buttons .modal-cancel-btn:hover {
+            background-color: #5A6268;
+            transform: translateY(-1px);
+        }
+
+        /* Estilos para el cuadrante de disponibilidad */
+        .availability-grid-week {
+            display: grid;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+
+        .availability-cell {
+            border: 1px solid #eee;
+            padding: 8px;
+            min-height: 100px; /* Increased for more content */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Align content to top */
+            align-items: flex-start; /* Align content to left */
+            text-align: left;
+            font-size: 0.8em;
+            background-color: #fff;
+            transition: background-color 0.2s ease;
+            word-break: break-word;
+        }
+
+        .availability-cell:hover {
+            background-color: #eaf6ff;
+        }
+
+        .availability-cell div {
+            margin-bottom: 4px;
+        }
+
+        .availability-cell .status-free {
+            color: #28A745; /* Green */
+            font-weight: bold;
+        }
+        .availability-cell .status-class {
+            color: #007BFF; /* Blue */
+        }
+        .availability-cell .status-support {
+            color: #FFC107; /* Yellow/Orange */
+        }
+        .availability-cell .status-non-lectiva {
+            color: #6C757D; /* Gray */
+        }
+        .availability-cell .status-recess-slot-info {
+            color: #FF9800; /* Orange */
+            font-weight: bold;
+        }
+
+        /* Estilos para la vista panorámica */
+        .panoramic-grid-week {
+            display: grid;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+
+        .panoramic-cell {
+            border: 1px solid #eee;
+            padding: 8px;
+            min-height: 120px; /* Adjusted for more content */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+            text-align: left;
+            font-size: 0.8em;
+            background-color: #fff;
+            transition: background-color 0.2s ease;
+            word-break: break-word;
+        }
+
+        .panoramic-cell:hover {
+            background-color: #eaf6ff;
+        }
+
+        .panoramic-cell .section-title {
+            font-weight: bold;
+            margin-top: 5px;
+            margin-bottom: 2px;
+            color: #333;
+        }
+
+        .panoramic-cell .free-teacher {
+            color: #28A745; /* Green */
+            font-weight: 500;
+        }
+
+        .panoramic-cell .support-teacher {
+            color: #FFC107; /* Yellow/Orange */
+            font-weight: 500;
+        }
+
+        .panoramic-cell .free-course {
+            color: #007BFF; /* Blue */
+            font-weight: 500;
+        }
+
+        .panoramic-cell .recess-slot-info {
+            color: #FF9800; /* Orange */
+            font-weight: bold;
+            text-align: center;
+            width: 100%;
+        }
+
+
+        /* Responsive adjustments */
+        @media (min-width: 768px) {
+            main {
+                grid-template-columns: repeat(2, 1fr); /* Two columns on medium screens */
+            }
+            section.visible {
+                grid-column: 1 / -1; /* Always span full width for visible section */
+            }
+            .input-group {
+                flex-wrap: nowrap; /* Prevent wrapping in input groups on larger screens */
+                justify-content: flex-start;
+            }
+            .input-group label {
+                flex-shrink: 0; /* Prevent label from shrinking */
+            }
+            .input-group input[type="text"],
+            .input-group input[type="time"],
+            .input-group input[type="date"],
+            .input-group select {
+                min-width: 0; /* Allow inputs to shrink */
+            }
+            .assign-class {
+                flex-wrap: wrap; /* Keep wrapping for assign-class */
+                display: flex;
+            }
+            .assign-class label {
+                flex-basis: auto;
+            }
+            .assign-class input, .assign-class select {
+                flex-basis: 180px;
+            }
+            .assign-class button {
+                flex-basis: auto;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            header {
+                padding: 10px;
+                margin-bottom: 15px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            .nav-buttons button {
+                padding: 10px 15px;
+                font-size: 0.9em;
+            }
+            .card {
+                padding: 15px;
+            }
+            h2 {
+                font-size: 1.5em;
+                padding-bottom: 10px;
+                margin-bottom: 15px;
+            }
+            h3 {
+                font-size: 1.1em;
+                margin-top: 20px;
+                margin-bottom: 10px;
+            }
+            .input-group {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .input-group label,
+            .input-group input,
+            .input-group select,
+            .input-group button {
+                width: 100%;
+            }
+            .input-group input[type="checkbox"] {
+                margin-left: 0;
+                margin-right: 0;
+            }
+            .list li {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 10px;
+            }
+            .list li .delete-btn {
+                margin-top: 8px;
+                align-self: flex-end;
+            }
+            .schedule-grid-week, .panoramic-grid-week, .availability-grid-week {
+                grid-template-columns: 70px repeat(5, minmax(40px, 1fr)); /* Further adjusted for smaller screens */
+            }
+            .grid-header-cell, .time-slot-label, .schedule-cell, .panoramic-cell, .availability-cell {
+                padding: 5px;
+                min-height: 50px;
+                font-size: 0.7em;
+            }
+            .schedule-cell .delete-btn {
+                font-size: 0.5em;
+                padding: 2px 4px;
+                top: 2px;
+                right: 2px;
+            }
+            .assign-class {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .assign-class label {
+                width: 100%;
+            }
+            .assign-class input, .assign-class select, .assign-class button {
+                width: 100%;
+                flex-basis: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Gestión de Horarios Escolares</h1>
+    </header>
+
+    <div class="nav-buttons">
+        <button onclick="showSection('stage-management')">1. Etapas</button>
+        <button onclick="showSection('course-management')">2. Cursos</button>
+        <button onclick="showSection('teacher-management')">3. Profesores</button>
+        <button onclick="showSection('schedule-management')">4. Horario Profesor</button>
+        <button onclick="showSection('class-schedule-view')">5. Horario Clase</button>
+        <button onclick="showSection('recess-guard-management')">6. Guardias Recreo</button>
+        <button onclick="showSection('teacher-availability-view')">7. Disponibilidad Profesores</button>
+        <button onclick="showSection('academic-year-management')">8. Año Académico</button>
+        <button onclick="showSection('data-management')">9. Datos (Backup)</button>
+        <button onclick="showSection('panoramic-view')">10. Vista Panorámica</button>
+    </div>
+
+    <main>
+        <section id="stage-management" class="card visible">
+            <h2>1. Gestión de Etapas</h2>
+            <div class="input-group">
+                <label for="stage-name">Nombre de Etapa:</label>
+                <input type="text" id="stage-name" placeholder="Ej: Primaria" aria-label="Nombre de la etapa">
+                <button onclick="addStage()">Añadir Etapa</button>
+            </div>
+            <h3>Etapas Actuales:</h3>
+            <ul id="stages-list" class="list"></ul>
+
+            <div class="divider"></div>
+
+            <h3>Asignaturas por Etapa:</h3>
+            <div class="input-group">
+                <label for="select-stage-subject">Selecciona Etapa:</label>
+                <select id="select-stage-subject" onchange="loadSubjectsForSelectedStage()" aria-label="Seleccionar etapa para asignaturas"></select>
+                <label for="subject-name">Nueva Asignatura:</label>
+                <input type="text" id="subject-name" placeholder="Ej: Matemáticas" aria-label="Nombre de la asignatura">
+                <button onclick="addSubject()">Añadir Asignatura</button>
+            </div>
+            <ul id="subjects-list" class="list"></ul>
+
+            <div class="divider"></div>
+
+            <h3>Tramos Horarios por Etapa:</h3>
+            <div class="input-group">
+                <label for="select-stage-timeslot">Selecciona Etapa:</label>
+                <select id="select-stage-timeslot" onchange="loadTimeSlotsForSelectedStage()" aria-label="Seleccionar etapa para tramos horarios"></select>
+                <label for="start-time">Inicio:</label>
+                <input type="time" id="start-time" aria-label="Hora de inicio del tramo">
+                <label for="end-time">Fin:</label>
+                <input type="time" id="end-time" aria-label="Hora de fin del tramo">
+                <label for="is-recess">¿Es Recreo?</label>
+                <input type="checkbox" id="is-recess" aria-label="Marcar si es tramo de recreo">
+                <button onclick="addTimeSlot()">Añadir Tramo</button>
+            </div>
+            <ul id="time-slots-list" class="list"></ul>
+        </section>
+
+        <section id="course-management" class="card">
+            <h2>2. Gestión de Cursos</h2>
+            <div class="input-group">
+                <label for="select-stage-course">Etapa:</label>
+                <select id="select-stage-course" aria-label="Etapa del curso"></select>
+                <label for="course-name">Nombre de Curso:</label>
+                <input type="text" id="course-name" placeholder="Ej: 1ºB Primaria" aria-label="Nombre del curso">
+                <button onclick="addCourse()">Añadir Curso</button>
+            </div>
+            <h3>Cursos Actuales:</h3>
+            <ul id="courses-list" class="list"></ul>
+        </section>
+
+        <section id="teacher-management" class="card">
+            <h2>3. Gestión de Profesores</h2>
+            <div class="input-group">
+                <label for="teacher-name">Nombre:</label>
+                <input type="text" id="teacher-name" placeholder="Ej: Ana" aria-label="Nombre del profesor">
+                <label for="teacher-lastname">Apellido:</label>
+                <input type="text" id="teacher-lastname" placeholder="Ej: García" aria-label="Apellido del profesor">
+                <label for="teacher-specialty">Especialidad:</label>
+                <input type="text" id="teacher-specialty" placeholder="Ej: Primaria, Inglés" aria-label="Especialidad del profesor">
+                <label for="cares-recess">¿Cuida Recreo?</label>
+                <input type="checkbox" id="cares-recess" aria-label="Marcar si el profesor cuida recreo">
+                <button onclick="addTeacher()">Añadir Profesor</button>
+            </div>
+            <h3>Profesores Actuales:</h3>
+            <ul id="teachers-list" class="list"></ul>
+        </section>
+
+        <section id="schedule-management" class="card">
+            <h2>4. Asignación de Horarios (Profesor)</h2>
+            <div class="input-group">
+                <label for="select-teacher-schedule">Profesor:</label>
+                <select id="select-teacher-schedule" onchange="loadTeacherSchedule()" aria-label="Profesor para ver horario"></select>
+                <button onclick="exportTeacherScheduleToCsv()">Exportar a Excel</button> </div>
+
+            <div id="teacher-schedule-display" class="schedule-grid-week">
+                </div>
+            <div class="divider"></div>
+
+            <h3>Asignar Clase:</h3>
+            <div class="input-group assign-class">
+                <label for="assign-teacher">Profesor:</label>
+                <select id="assign-teacher" aria-label="Profesor a asignar"></select>
+                <label for="assign-day">Día:</label>
+                <select id="assign-day" aria-label="Día a asignar">
+                    <option value="1">Lunes</option>
+                    <option value="2">Martes</option>
+                    <option value="3">Miércoles</option>
+                    <option value="4">Jueves</option>
+                    <option value="5">Viernes</option>
+                </select>
+                <label for="assign-timeslot">Tramo:</label>
+                <select id="assign-timeslot" aria-label="Tramo horario a asignar"></select>
+                <label for="assign-course">Curso:</label>
+                <select id="assign-course" aria-label="Curso a asignar"></select>
+                <label for="assign-subject">Asignatura:</label>
+                <select id="assign-subject" aria-label="Asignatura a asignar"></select>
+                <label for="assign-group-name">Grupo (Desdoble):</label>
+                <input type="text" id="assign-group-name" placeholder="Ej: A, B, Refuerzo" aria-label="Nombre del grupo de desdoble (opcional)">
+                <label for="is-support-teacher">¿Es apoyo?</label>
+                <input type="checkbox" id="is-support-teacher" aria-label="Marcar si es profesor de apoyo">
+                <button onclick="assignClass()">Asignar</button>
+            </div>
+
+            <div class="divider"></div>
+
+            <h3>Asignar Hora No Lectiva:</h3>
+            <div class="input-group">
+                <label for="select-teacher-nonlectiva">Profesor:</label>
+                <select id="select-teacher-nonlectiva" aria-label="Profesor para horas no lectivas"></select>
+                <label for="select-day-nonlectiva">Día:</label>
+                <select id="select-day-nonlectiva" aria-label="Día para horas no lectivas">
+                    <option value="1">Lunes</option>
+                    <option value="2">Martes</option>
+                    <option value="3">Miércoles</option>
+                    <option value="4">Jueves</option>
+                    <option value="5">Viernes</option>
+                </select>
+                <label for="select-timeslot-nonlectiva">Tramo Horario:</label>
+                <select id="select-timeslot-nonlectiva" aria-label="Tramo horario para horas no lectivas"></select>
+                <label for="nonlectiva-type">Tipo:</label>
+                <select id="nonlectiva-type" aria-label="Tipo de hora no lectiva">
+                    <option value="support">Apoyo a clase</option>
+                    <option value="coordination">Coordinación</option>
+                    <option value="meeting">Reunión</option>
+                </select>
+                <label for="nonlectiva-description">Descripción:</label>
+                <input type="text" id="nonlectiva-description" placeholder="Ej: Apoyo 1ºA Matemáticas, Reunión Ciclo" aria-label="Descripción de la hora no lectiva">
+                <button onclick="addNonLectivaHour()">Añadir Hora No Lectiva</button>
+            </div>
+        </section>
+
+        <section id="class-schedule-view" class="card">
+            <h2>5. Horarios por Clase</h2>
+            <div class="input-group">
+                <label for="select-course-schedule">Curso:</label>
+                <select id="select-course-schedule" onchange="loadClassSchedule()" aria-label="Curso para ver horario"></select>
+                <button onclick="exportClassScheduleToCsv()">Exportar a Excel</button> </div>
+            <div id="class-schedule-display" class="schedule-grid-week">
+                </div>
+            </section>
+
+        <section id="recess-guard-management" class="card">
+            <h2>6. Gestión de Guardias de Recreo</h2>
+            <div class="divider"></div>
+            <h3>Gestión de Grupos de Guardia:</h3>
+            <div class="input-group">
+                <label for="group-size-input">Profesores por Grupo:</label>
+                <input type="number" id="group-size-input" min="1" value="3" aria-label="Número de profesores por grupo">
+                <button onclick="formTeacherGroups()">Formar Grupos</button>
+            </div>
+            <ul id="formed-groups-list" class="list"></ul>
+
+            <div class="divider"></div>
+            <button onclick="generateRecessGuards()">Generar Guardias Automáticamente (Rotación Semanal)</button>
+            <p class="text-gray-700">Esto generará las guardias de recreo para todo el año académico, rotando los grupos formados por semana.</p>
+            <div class="divider"></div>
+            <h3>Guardias de Recreo Asignadas:</h3>
+            <ul id="recess-guards-list" class="list"></ul>
+        </section>
+
+        <section id="teacher-availability-view" class="card">
+            <h2>7. Disponibilidad de Profesores</h2>
+            <div id="teacher-availability-display" class="availability-grid-week">
+            </div>
+        </section>
+
+        <section id="academic-year-management" class="card">
+            <h2>8. Gestión del Año Académico</h2>
+            <h3>Fechas del Curso:</h3>
+            <div class="input-group">
+                <label for="start-academic-year">Inicio del Curso:</label>
+                <input type="date" id="start-academic-year" aria-label="Fecha de inicio del curso">
+                <label for="end-academic-year">Fin del Curso:</label>
+                <input type="date" id="end-academic-year" aria-label="Fecha de fin del curso">
+                <button onclick="setAcademicYearDates()">Guardar Fechas</button>
+            </div>
+            <p id="academic-year-display"></p>
+
+            <div class="divider"></div>
+
+            <h3>Festividades:</h3>
+            <div class="input-group">
+                <label for="holiday-date">Fecha:</label>
+                <input type="date" id="holiday-date" aria-label="Fecha de la festividad">
+                <label for="holiday-name">Nombre:</label>
+                <input type="text" id="holiday-name" placeholder="Ej: Día de la Constitución" aria-label="Nombre de la festividad">
+                <button onclick="addHoliday()">Añadir Festividad</button>
+            </div>
+            <ul id="holidays-list" class="list"></ul>
+
+            <div class="divider"></div>
+
+            <h3>Períodos Vacacionales:</h3>
+            <div class="input-group">
+                <label for="vacation-start-date">Inicio:</label>
+                <input type="date" id="vacation-start-date" aria-label="Fecha de inicio de las vacaciones">
+                <label for="vacation-end-date">Fin:</label>
+                <input type="date" id="vacation-end-date" aria-label="Fecha de fin de las vacaciones">
+                <label for="vacation-name">Nombre:</label>
+                <input type="text" id="vacation-name" placeholder="Ej: Navidad" aria-label="Nombre del período vacacional">
+                <button onclick="addVacationPeriod()">Añadir Período</button>
+            </div>
+            <ul id="vacation-periods-list" class="list"></ul>
+        </section>
+
+        <section id="data-management" class="card">
+            <h2>9. Gestión de Datos (Backup)</h2>
+            <button onclick="exportData()">Exportar Datos (JSON)</button>
+            <button onclick="exportAllTeacherSchedulesToCsv()">Exportar Todos los Horarios de Profesores (Excel)</button>
+            <button onclick="exportAllClassSchedulesToCsv()">Exportar Todos los Horarios de Clases (Excel)</button>
+            <p>Importar Datos (¡Sobrescribirá los actuales!)</p>
+            <input type="file" id="import-file" accept=".json" aria-label="Seleccionar archivo para importar">
+            <button onclick="importData()">Importar Datos</button>
+        </section>
+
+        <section id="panoramic-view" class="card">
+            <h2>10. Vista Panorámica General</h2>
+            <p>Esta vista muestra los profesores disponibles (libres o de apoyo) y los cursos sin clase principal asignada para cada tramo horario.</p>
+            <div id="panoramic-schedule-display" class="panoramic-grid-week">
+            </div>
+        </section>
+    </main>
+
+    <div id="customModalOverlay" class="custom-modal-overlay">
+        <div class="custom-modal-content">
+            <p id="customModalMessage"></p>
+            <div class="custom-modal-buttons">
+                <button id="modalOkBtn" class="modal-ok-btn">OK</button>
+                <button id="modalCancelBtn" class="modal-cancel-btn">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Gestión de Datos en localStorage ---
+
+        const STORAGE_KEY = 'schoolManagementData';
+
+        let appData = {
+            stages: [],
+            subjects: [], // { id, name, stageId }
+            courses: [],  // { id, name, stageId }
+            teachers: [], // { id, name, lastName, specialty, caresRecess }
+            timeSlots: [], // { id, startTime, endTime, stageId, isRecess }
+            schedules: [], // { id, teacherId, dayOfWeek, timeSlotId, courseId, subjectId, isSupportTeacher, groupName: string | null }
+            nonLectivaHours: [], // { id, teacherId, dayOfWeek, timeSlotId, type, description, targetCourseId }
+            recessGuards: [], // { id, weekStartDate, groupId, dayOfWeek, timeSlotId, type: 'generated' }
+            academicYear: { // New structure for academic year data
+                startDate: null,
+                endDate: null,
+                holidays: [], // { id, date, name }
+                vacations: [] // { id, startDate, endDate, name }
+            },
+            teacherGroups: [] // New: stores { id, name, teacherIds: [] }
+        };
+
+        // Referencias a los elementos del modal
+        const customModalOverlay = document.getElementById('customModalOverlay');
+        const customModalMessage = document.getElementById('customModalMessage');
+        const modalOkBtn = document.getElementById('modalOkBtn');
+        const modalCancelBtn = document.getElementById('modalCancelBtn');
+        let currentModalCallback = null;
+
+        /**
+         * Muestra un modal personalizado para mensajes de alerta o confirmación.
+         * @param {string} message - El mensaje a mostrar en el modal.
+         * @param {'alert'|'confirm'} type - El tipo de modal: 'alert' (solo botón OK) o 'confirm' (OK y Cancelar).
+         * @param {function(boolean): void} [callback] - Función a llamar al cerrar el modal (true para OK, false para Cancelar).
+         */
+        function showMessage(message, type = 'alert', callback = null) {
+            customModalMessage.textContent = message;
+            currentModalCallback = callback;
+
+            if (type === 'alert') {
+                modalOkBtn.style.display = 'inline-block';
+                modalCancelBtn.style.display = 'none';
+            } else if (type === 'confirm') {
+                modalOkBtn.style.display = 'inline-block';
+                modalCancelBtn.style.display = 'inline-block';
+            }
+
+            customModalOverlay.classList.add('visible');
+        }
+
+        // Event listeners para los botones del modal
+        modalOkBtn.onclick = () => {
+            customModalOverlay.classList.remove('visible');
+            if (currentModalCallback) {
+                currentModalCallback(true);
+            }
+        };
+
+        modalCancelBtn.onclick = () => {
+            customModalOverlay.classList.remove('visible');
+            if (currentModalCallback) {
+                currentModalCallback(false);
+            }
+        };
+
+
+        // Cargar datos al inicio
+        function loadData() {
+            const storedData = localStorage.getItem(STORAGE_KEY);
+            if (storedData) {
+                const parsedData = JSON.parse(storedData);
+                // Merge with default appData to ensure new keys exist
+                appData = { ...appData, ...parsedData };
+                // Ensure academicYear and teacherGroups sub-objects are initialized if missing from old data
+                appData.academicYear = appData.academicYear || { startDate: null, endDate: null, holidays: [], vacations: [] };
+                appData.academicYear.holidays = appData.academicYear.holidays || [];
+                appData.academicYear.vacations = appData.academicYear.vacations || [];
+                appData.teacherGroups = appData.teacherGroups || [];
+                // Initialize new fields for existing data
+                appData.schedules.forEach(s => {
+                    if (s.groupName === undefined) { // Check if groupName is missing
+                        s.groupName = null; // Set default value
+                    }
+                });
+            }
+            renderAll();
+            // Show the first section by default
+            showSection('stage-management');
+        }
+
+        // Guardar datos
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+            renderAll(); // Volver a renderizar para asegurar la UI actualizada
+        }
+
+        // Función auxiliar para generar IDs únicos
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substring(2);
+        }
+
+        // --- Renderizado de la UI ---
+
+        function renderAll() {
+            renderStages();
+            renderSubjects();
+            renderTimeSlots();
+            renderCourses();
+            renderTeachers();
+            renderFormedGroups(); // Render the new formed groups list
+            renderRecessGuards(); // Render the new recess guards list
+            renderAcademicYearData(); // Render academic year data
+            populateSelects(); // Rellenar todos los <select>
+            loadTeacherSchedule(); // Cargar el horario del profesor seleccionado por defecto
+            loadClassSchedule(); // Load class schedule for selected course
+            loadTeacherAvailabilitySchedule(); // Load teacher availability schedule
+            loadPanoramicView(); // Load the new panoramic view
+        }
+
+        // Function to toggle section visibility
+        function showSection(sectionId) {
+            document.querySelectorAll('main section').forEach(section => {
+                section.classList.remove('visible');
+            });
+            document.getElementById(sectionId).classList.add('visible');
+            // Re-render the specific section content when it becomes visible
+            if (sectionId === 'teacher-schedule-display') {
+                loadTeacherSchedule();
+            } else if (sectionId === 'class-schedule-view') {
+                loadClassSchedule();
+            } else if (sectionId === 'teacher-availability-view') {
+                loadTeacherAvailabilitySchedule();
+            } else if (sectionId === 'panoramic-view') {
+                loadPanoramicView();
+            }
+        }
+
+        // Renderizar Etapas
+        function renderStages() {
+            const stagesList = document.getElementById('stages-list');
+            stagesList.innerHTML = '';
+            appData.stages.forEach(stage => {
+                const li = document.createElement('li');
+                li.textContent = stage.name;
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'X';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = () => deleteStage(stage.id);
+                li.appendChild(deleteBtn);
+                stagesList.appendChild(li);
+            });
+        }
+
+        // Renderizar Asignaturas
+        function renderSubjects() {
+            const selectedStageId = document.getElementById('select-stage-subject').value;
+            const subjectsList = document.getElementById('subjects-list');
+            subjectsList.innerHTML = '';
+            appData.subjects
+                .filter(subject => subject.stageId === selectedStageId)
+                .forEach(subject => {
+                    const li = document.createElement('li');
+                    const stageName = appData.stages.find(s => s.id === subject.stageId)?.name || 'N/A';
+                    li.textContent = `${subject.name} (${stageName})`; // Mostrar nombre y etapa
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'X';
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.onclick = () => deleteSubject(subject.id);
+                    li.appendChild(deleteBtn);
+                    subjectsList.appendChild(li);
+                });
+        }
+
+        // Renderizar Tramos Horarios
+        function renderTimeSlots() {
+            const selectedStageId = document.getElementById('select-stage-timeslot').value;
+            const timeSlotsList = document.getElementById('time-slots-list');
+            timeSlotsList.innerHTML = '';
+            appData.timeSlots
+                .filter(slot => slot.stageId === selectedStageId)
+                .sort((a, b) => a.startTime.localeCompare(b.startTime)) // Ordenar por hora de inicio
+                .forEach(slot => {
+                    const li = document.createElement('li');
+                    li.textContent = `${slot.startTime} - ${slot.endTime} ${slot.isRecess ? '(Recreo)' : ''}`;
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'X';
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.onclick = () => deleteTimeSlot(slot.id);
+                    li.appendChild(deleteBtn);
+                    timeSlotsList.appendChild(li);
+                });
+        }
+
+        // Renderizar Cursos
+        function renderCourses() {
+            const coursesList = document.getElementById('courses-list');
+            coursesList.innerHTML = '';
+            appData.courses.forEach(course => {
+                const li = document.createElement('li');
+                const stageName = appData.stages.find(s => s.id === course.stageId)?.name || 'N/A';
+                li.textContent = `${course.name} (${stageName})`;
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'X';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = () => deleteCourse(course.id);
+                li.appendChild(deleteBtn);
+                coursesList.appendChild(li);
+            });
+        }
+
+        // Renderizar Profesores
+        function renderTeachers() {
+            const teachersList = document.getElementById('teachers-list');
+            teachersList.innerHTML = '';
+            appData.teachers.forEach(teacher => {
+                const li = document.createElement('li');
+                li.textContent = `${teacher.firstName} ${teacher.lastName} (${teacher.specialty}) ${teacher.caresRecess ? '(Cuida Recreo)' : ''}`;
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'X';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = () => deleteTeacher(teacher.id);
+                li.appendChild(deleteBtn);
+                teachersList.appendChild(li);
+            });
+        }
+
+        // Render Formed Groups
+        function renderFormedGroups() {
+            const formedGroupsList = document.getElementById('formed-groups-list');
+            formedGroupsList.innerHTML = '';
+            if (appData.teacherGroups.length === 0) {
+                formedGroupsList.textContent = 'No hay grupos de guardia formados.';
+                return;
+            }
+
+            appData.teacherGroups.forEach(group => {
+                const li = document.createElement('li');
+                const teacherNames = group.teacherIds.map(id => {
+                    const teacher = appData.teachers.find(t => t.id === id);
+                    return teacher ? `${teacher.firstName} ${teacher.lastName}` : 'N/A';
+                }).join(', ');
+                li.textContent = `${group.name}: ${teacherNames}`;
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'X';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = () => deleteTeacherGroup(group.id);
+                li.appendChild(deleteBtn);
+                formedGroupsList.appendChild(li);
+            });
+        }
+
+        // Render Recess Guards (updated to show weekly assignments)
+        function renderRecessGuards() {
+            const recessGuardsList = document.getElementById('recess-guards-list');
+            recessGuardsList.innerHTML = '';
+            if (appData.recessGuards.length === 0) {
+                recessGuardsList.textContent = 'No hay guardias de recreo asignadas para el año académico.';
+                return;
+            }
+
+            // Group recess guards by week and then by day for better display
+            const groupedGuards = {};
+            appData.recessGuards.forEach(guard => {
+                if (!groupedGuards[guard.weekStartDate]) {
+                    groupedGuards[guard.weekStartDate] = {};
+                }
+                if (!groupedGuards[guard.weekStartDate][guard.dayOfWeek]) {
+                    groupedGuards[guard.weekStartDate][guard.dayOfWeek] = [];
+                }
+                groupedGuards[guard.weekStartDate][guard.dayOfWeek].push(guard);
+            });
+
+            const sortedWeeks = Object.keys(groupedGuards).sort();
+            sortedWeeks.forEach(weekStartDate => {
+                const weekHeader = document.createElement('h4');
+                weekHeader.textContent = `Semana del ${weekStartDate}`;
+                weekHeader.style.marginTop = '20px';
+                weekHeader.style.marginBottom = '10px';
+                weekHeader.style.color = '#3f51b5';
+                recessGuardsList.appendChild(weekHeader);
+
+                const daysSorted = Object.keys(groupedGuards[weekStartDate]).sort((a, b) => parseInt(a) - parseInt(b));
+                daysSorted.forEach(dayOfWeek => {
+                    const dayName = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][parseInt(dayOfWeek)];
+                    const guardsForDay = groupedGuards[weekStartDate][dayOfWeek];
+
+                    guardsForDay.forEach(guard => {
+                        const li = document.createElement('li');
+                        const assignedGroup = appData.teacherGroups.find(g => g.id === guard.groupId);
+                        const timeSlot = appData.timeSlots.find(ts => ts.id === guard.timeSlotId);
+                        
+                        const teacherNames = assignedGroup ? assignedGroup.teacherIds.map(id => {
+                            const teacher = appData.teachers.find(t => t.id === id);
+                            return teacher ? `${teacher.firstName} ${teacher.lastName}` : 'N/A';
+                        }).join(', ') : 'N/A';
+
+                        li.textContent = `${dayName} ${timeSlot?.startTime}-${timeSlot?.endTime}: ${assignedGroup?.name || 'N/A'} (${teacherNames})`;
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = 'X';
+                        deleteBtn.className = 'delete-btn';
+                        deleteBtn.onclick = () => deleteRecessGuard(guard.id);
+                        li.appendChild(deleteBtn);
+                        recessGuardsList.appendChild(li);
+                    });
+                });
+            });
+        }
+
+
+        // New: Render Academic Year Data
+        function renderAcademicYearData() {
+            const academicYearDisplay = document.getElementById('academic-year-display');
+            const startInput = document.getElementById('start-academic-year');
+            const endInput = document.getElementById('end-academic-year');
+
+            if (appData.academicYear.startDate && appData.academicYear.endDate) {
+                academicYearDisplay.textContent = `Curso: ${appData.academicYear.startDate} al ${appData.academicYear.endDate}`;
+                startInput.value = appData.academicYear.startDate;
+                endInput.value = appData.academicYear.endDate;
+            } else {
+                academicYearDisplay.textContent = 'Fechas del curso no definidas.';
+                startInput.value = '';
+                endInput.value = '';
+            }
+            renderHolidays();
+            renderVacationPeriods();
+        }
+
+        // New: Render Holidays
+        function renderHolidays() {
+            const holidaysList = document.getElementById('holidays-list');
+            holidaysList.innerHTML = '';
+            appData.academicYear.holidays.sort((a, b) => a.date.localeCompare(b.date)).forEach(holiday => {
+                const li = document.createElement('li');
+                li.textContent = `${holiday.date} - ${holiday.name}`;
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'X';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = () => deleteHoliday(holiday.id);
+                li.appendChild(deleteBtn);
+                holidaysList.appendChild(li);
+            });
+        }
+
+        // New: Render Vacation Periods
+        function renderVacationPeriods() {
+            const vacationPeriodsList = document.getElementById('vacation-periods-list');
+            vacationPeriodsList.innerHTML = '';
+            appData.academicYear.vacations.sort((a, b) => a.startDate.localeCompare(b.startDate)).forEach(vacation => {
+                const li = document.createElement('li');
+                li.textContent = `${vacation.name}: ${vacation.startDate} al ${vacation.endDate}`;
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'X';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = () => deleteVacationPeriod(vacation.id);
+                li.appendChild(deleteBtn);
+                vacationPeriodsList.appendChild(li);
+            });
+        }
+
+
+        // --- Lógica de Añadir ---
+
+        function addStage() {
+            const nameInput = document.getElementById('stage-name');
+            const name = nameInput.value.trim();
+            if (name && !appData.stages.some(s => s.name === name)) {
+                appData.stages.push({ id: generateId(), name });
+                nameInput.value = '';
+                saveData();
+            } else {
+                showMessage('El nombre de la etapa es inválido o ya existe.');
+            }
+        }
+
+        function addSubject() {
+            const stageSelect = document.getElementById('select-stage-subject');
+            const nameInput = document.getElementById('subject-name');
+            const stageId = stageSelect.value;
+            const name = nameInput.value.trim();
+
+            if (stageId && name && !appData.subjects.some(s => s.name === name && s.stageId === stageId)) {
+                appData.subjects.push({ id: generateId(), name, stageId });
+                nameInput.value = '';
+                saveData();
+            } else {
+                showMessage('Selecciona una etapa y/o el nombre de la asignatura es inválido o ya existe para esta etapa.');
+            }
+        }
+
+        function addTimeSlot() {
+            const stageSelect = document.getElementById('select-stage-timeslot');
+            const startTimeInput = document.getElementById('start-time');
+            const endTimeInput = document.getElementById('end-time');
+            const isRecessCheckbox = document.getElementById('is-recess');
+
+            const stageId = stageSelect.value;
+            const startTime = startTimeInput.value;
+            const endTime = endTimeInput.value;
+            const isRecess = isRecessCheckbox.checked;
+
+            if (stageId && startTime && endTime && startTime < endTime) {
+                // Simple check for overlap within the same stage
+                const hasOverlap = appData.timeSlots.some(slot =>
+                    slot.stageId === stageId &&
+                    ((startTime >= slot.startTime && startTime < slot.endTime) ||
+                    (endTime > slot.startTime && endTime <= slot.endTime) ||
+                    (slot.startTime >= startTime && slot.startTime < endTime))
+                );
+                if (hasOverlap) {
+                    showMessage('El tramo horario se solapa con uno existente en esta etapa.');
+                    return;
+                }
+
+                appData.timeSlots.push({ id: generateId(), startTime, endTime, stageId, isRecess });
+                startTimeInput.value = '';
+                endTimeInput.value = '';
+                isRecessCheckbox.checked = false; // Reset checkbox
+                saveData();
+            } else {
+                showMessage('Selecciona una etapa, ingresa horas válidas y asegúrate que la hora de inicio sea menor que la de fin.');
+            }
+        }
+
+        function addCourse() {
+            const stageSelect = document.getElementById('select-stage-course');
+            const nameInput = document.getElementById('course-name');
+            const stageId = stageSelect.value;
+            const name = nameInput.value.trim();
+
+            if (stageId && name && !appData.courses.some(c => c.name === name)) {
+                appData.courses.push({ id: generateId(), name, stageId });
+                nameInput.value = '';
+                saveData();
+            } else {
+                showMessage('Selecciona una etapa y/o el nombre del curso es inválido o ya existe.');
+            }
+        }
+
+        function addTeacher() {
+            const nameInput = document.getElementById('teacher-name');
+            const lastNameInput = document.getElementById('teacher-lastname');
+            const specialtyInput = document.getElementById('teacher-specialty');
+            const caresRecessCheckbox = document.getElementById('cares-recess');
+
+            const firstName = nameInput.value.trim();
+            const lastName = lastNameInput.value.trim();
+            const specialty = specialtyInput.value.trim();
+            const caresRecess = caresRecessCheckbox.checked;
+
+            if (firstName && lastName) {
+                appData.teachers.push({ id: generateId(), firstName, lastName, specialty, caresRecess });
+                nameInput.value = '';
+                lastNameInput.value = '';
+                specialtyInput.value = '';
+                caresRecessCheckbox.checked = false; // Reset checkbox
+                saveData();
+            } else {
+                showMessage('El nombre y apellido del profesor son obligatorios.');
+            }
+        }
+
+        function addNonLectivaHour() {
+            const teacherId = document.getElementById('select-teacher-nonlectiva').value;
+            const dayOfWeek = parseInt(document.getElementById('select-day-nonlectiva').value);
+            const timeSlotId = document.getElementById('select-timeslot-nonlectiva').value;
+            const type = document.getElementById('nonlectiva-type').value;
+            const description = document.getElementById('nonlectiva-description').value.trim();
+
+            if (!teacherId || isNaN(dayOfWeek) || !timeSlotId || !description) {
+                showMessage('Por favor, completa todos los campos para la hora no lectiva.');
+                return;
+            }
+
+            // Comprobar solapamiento con otras horas no lectivas, clases o guardias de recreo del mismo profesor
+            const existingNonLectiva = appData.nonLectivaHours.find(
+                h => h.teacherId === teacherId && h.dayOfWeek === dayOfWeek && h.timeSlotId === timeSlotId
+            );
+            const existingClass = appData.schedules.find(
+                s => s.teacherId === teacherId && s.dayOfWeek === dayOfWeek && s.timeSlotId === timeSlotId
+            );
+          
+            if (existingNonLectiva || existingClass) {
+                showMessage('Este profesor ya tiene una actividad (clase o no lectiva) asignada en este día y tramo horario.');
+                return;
+            }
+
+            appData.nonLectivaHours.push({
+                id: generateId(),
+                teacherId,
+                dayOfWeek,
+                timeSlotId,
+                type,
+                description,
+                targetCourseId: type === 'support' ? document.getElementById('assign-course').value : null
+            });
+            document.getElementById('nonlectiva-description').value = '';
+            saveData();
+        }
+
+        // Removed addManualRecessGuard as recess guards are now generated by rotation.
+
+        // New: Set Academic Year Dates
+        function setAcademicYearDates() {
+            const startDate = document.getElementById('start-academic-year').value;
+            const endDate = document.getElementById('end-academic-year').value;
+
+            if (startDate && endDate && startDate <= endDate) {
+                appData.academicYear.startDate = startDate;
+                appData.academicYear.endDate = endDate;
+                saveData();
+                showMessage('Fechas del curso guardadas correctamente.');
+            } else {
+                showMessage('Por favor, ingresa fechas válidas para el inicio y fin del curso. La fecha de inicio debe ser anterior o igual a la de fin.');
+            }
+        }
+
+        // New: Add Holiday
+        function addHoliday() {
+            const date = document.getElementById('holiday-date').value;
+            const name = document.getElementById('holiday-name').value.trim();
+
+            if (date && name) {
+                if (appData.academicYear.holidays.some(h => h.date === date)) {
+                    showMessage('Ya existe una festividad en esta fecha.');
+                    return;
+                }
+                appData.academicYear.holidays.push({ id: generateId(), date, name });
+                document.getElementById('holiday-date').value = '';
+                document.getElementById('holiday-name').value = '';
+                saveData();
+            } else {
+                showMessage('Por favor, ingresa la fecha y el nombre de la festividad.');
+            }
+        }
+
+        // New: Add Vacation Period
+        function addVacationPeriod() {
+            const startDate = document.getElementById('vacation-start-date').value;
+            const endDate = document.getElementById('vacation-end-date').value;
+            const name = document.getElementById('vacation-name').value.trim();
+
+            if (startDate && endDate && name && startDate <= endDate) {
+                // Basic overlap check for vacation periods
+                const hasOverlap = appData.academicYear.vacations.some(vac =>
+                    (startDate <= vac.endDate && endDate >= vac.startDate)
+                );
+                if (hasOverlap) {
+                    showMessage('El período vacacional se solapa con uno existente.');
+                    return;
+                }
+
+                appData.academicYear.vacations.push({ id: generateId(), startDate, endDate, name });
+                document.getElementById('vacation-start-date').value = '';
+                document.getElementById('vacation-end-date').value = '';
+                document.getElementById('vacation-name').value = '';
+                saveData();
+            } else {
+                showMessage('Por favor, ingresa fechas válidas y un nombre para el período vacacional. La fecha de inicio debe ser anterior o igual a la de fin.');
+            }
+        }
+
+        // New: Form Teacher Groups
+        function formTeacherGroups() {
+            const groupSize = parseInt(document.getElementById('group-size-input').value);
+            if (isNaN(groupSize) || groupSize <= 0) {
+                showMessage('Por favor, introduce un número válido para el tamaño del grupo (mayor que 0).');
+                return;
+            }
+
+            const teachersCaringRecess = appData.teachers.filter(t => t.caresRecess);
+            if (teachersCaringRecess.length === 0) {
+                showMessage('No hay profesores marcados para cuidar recreo. Marca a los profesores correspondientes en la sección de "Gestión de Profesores".');
+                return;
+            }
+
+            appData.teacherGroups = [];
+            let currentGroup = [];
+            let groupCounter = 1;
+
+            // Shuffle teachers to ensure random groups
+            const shuffledTeachers = [...teachersCaringRecess].sort(() => Math.random() - 0.5);
+
+            shuffledTeachers.forEach(teacher => {
+                currentGroup.push(teacher.id);
+                if (currentGroup.length === groupSize) {
+                    appData.teacherGroups.push({
+                        id: generateId(),
+                        name: `Grupo ${groupCounter++}`,
+                        teacherIds: currentGroup
+                    });
+                    currentGroup = [];
+                }
+            });
+
+            // Add any remaining teachers to the last group or form a new small group
+            if (currentGroup.length > 0) {
+                appData.teacherGroups.push({
+                    id: generateId(),
+                    name: `Grupo ${groupCounter++}`,
+                    teacherIds: currentGroup
+                });
+            }
+
+            saveData();
+            renderFormedGroups();
+            showMessage(`Se han formado ${appData.teacherGroups.length} grupos.`);
+        }
+
+        // --- Lógica de Borrar ---
+
+        function deleteStage(id) {
+            showMessage('¿Estás seguro de que quieres eliminar esta etapa? Se eliminarán también asignaturas, cursos, tramos y horarios asociados.', 'confirm', (result) => {
+                if (result) {
+                    // Eliminar asignaturas, cursos, tramos y horarios asociados
+                    appData.subjects = appData.subjects.filter(s => s.stageId !== id);
+                    appData.courses = appData.courses.filter(c => c.stageId !== id);
+
+                    // Filter time slots first, then use their IDs to filter schedules and nonLectivaHours
+                    const timeSlotsToDeleteIds = appData.timeSlots.filter(ts => ts.stageId === id).map(ts => ts.id);
+                    appData.timeSlots = appData.timeSlots.filter(ts => ts.stageId !== id);
+
+                    appData.schedules = appData.schedules.filter(sch =>
+                        !timeSlotsToDeleteIds.includes(sch.timeSlotId) &&
+                        !appData.courses.some(c => c.id === sch.courseId && c.stageId === id) // Check if course was deleted
+                    );
+                    appData.nonLectivaHours = appData.nonLectivaHours.filter(nlh => !timeSlotsToDeleteIds.includes(nlh.timeSlotId));
+                    appData.recessGuards = appData.recessGuards.filter(rg => !timeSlotsToDeleteIds.includes(rg.timeSlotId));
+
+                    appData.stages = appData.stages.filter(s => s.id !== id);
+                    saveData();
+                }
+            });
+        }
+
+        function deleteSubject(id) {
+            showMessage('¿Estás seguro de que quieres eliminar esta asignatura? Se eliminarán las clases asignadas con ella.', 'confirm', (result) => {
+                if (result) {
+                    appData.schedules = appData.schedules.filter(sch => sch.subjectId !== id);
+                    appData.subjects = appData.subjects.filter(s => s.id !== id);
+                    saveData();
+                }
+            });
+        }
+
+        function deleteTimeSlot(id) {
+            showMessage('¿Estás seguro de que quieres eliminar este tramo horario? Se eliminarán las clases y horas no lectivas asignadas en él.', 'confirm', (result) => {
+                if (result) {
+                    appData.schedules = appData.schedules.filter(sch => sch.timeSlotId !== id);
+                    appData.nonLectivaHours = appData.nonLectivaHours.filter(nlh => nlh.timeSlotId !== id);
+                    appData.recessGuards = appData.recessGuards.filter(rg => rg.timeSlotId !== id); // Delete associated recess guards
+                    appData.timeSlots = appData.timeSlots.filter(ts => ts.id !== id);
+                    saveData();
+                }
+            });
+        }
+
+        function deleteCourse(id) {
+            showMessage('¿Estás seguro de que quieres eliminar este curso? Se eliminarán las clases asignadas a él.', 'confirm', (result) => {
+                if (result) {
+                    appData.schedules = appData.schedules.filter(sch => sch.courseId !== id);
+                    appData.nonLectivaHours = appData.nonLectivaHours.filter(nlh => nlh.targetCourseId !== id);
+                    appData.courses = appData.courses.filter(c => c.id !== id);
+                    saveData();
+                }
+            });
+        }
+
+        function deleteTeacher(id) {
+            showMessage('¿Estás seguro de que quieres eliminar este profesor? Se eliminarán todas sus clases y horas no lectivas, y se ajustarán los grupos de guardia.', 'confirm', (result) => {
+                if (result) {
+                    appData.schedules = appData.schedules.filter(sch => sch.teacherId !== id);
+                    appData.nonLectivaHours = appData.nonLectivaHours.filter(nlh => nlh.teacherId !== id);
+                    // Remove teacher from any groups
+                    appData.teacherGroups.forEach(group => {
+                        group.teacherIds = group.teacherIds.filter(teacherId => teacherId !== id);
+                    });
+                    // Remove any recess guards where this teacher's group was assigned
+                    appData.recessGuards = appData.recessGuards.filter(rg => {
+                        const group = appData.teacherGroups.find(g => g.id === rg.groupId);
+                        return group && !group.teacherIds.includes(id); // If group exists and doesn't contain the teacher
+                    });
+
+                    appData.teachers = appData.teachers.filter(t => t.id !== id);
+                    saveData();
+                }
+            });
+        }
+
+        function deleteSchedule(id) {
+            showMessage('¿Estás seguro de que quieres eliminar esta asignación de clase?', 'confirm', (result) => {
+                if (result) {
+                    appData.schedules = appData.schedules.filter(s => s.id !== id);
+                    saveData();
+                    loadTeacherSchedule(); // Recargar el horario para mostrar los cambios
+                    loadClassSchedule(); // Also reload class schedule
+                    loadTeacherAvailabilitySchedule(); // Also reload availability schedule
+                    loadPanoramicView(); // Update panoramic view
+                }
+            });
+        }
+
+        function deleteNonLectivaHour(id) {
+            showMessage('¿Estás seguro de que quieres eliminar esta hora no lectiva/de apoyo?', 'confirm', (result) => {
+                if (result) {
+                    appData.nonLectivaHours = appData.nonLectivaHours.filter(h => h.id !== id);
+                    saveData();
+                    loadTeacherSchedule(); // Recargar el horario para mostrar los cambios
+                    loadTeacherAvailabilitySchedule(); // Also reload availability schedule
+                    loadPanoramicView(); // Update panoramic view
+                }
+            });
+        }
+
+        function deleteRecessGuard(id) {
+            showMessage('¿Estás seguro de que quieres eliminar esta guardia de recreo?', 'confirm', (result) => {
+                if (result) {
+                    appData.recessGuards = appData.recessGuards.filter(rg => rg.id !== id);
+                    saveData();
+                    loadTeacherSchedule(); // Recargar el horario para mostrar los cambios
+                    loadClassSchedule();
+                    loadTeacherAvailabilitySchedule(); // Also reload availability schedule
+                    loadPanoramicView(); // Update panoramic view
+                }
+            });
+        }
+
+        // New: Delete Holiday
+        function deleteHoliday(id) {
+            showMessage('¿Estás seguro de que quieres eliminar esta festividad?', 'confirm', (result) => {
+                if (result) {
+                    appData.academicYear.holidays = appData.academicYear.holidays.filter(h => h.id !== id);
+                    saveData();
+                }
+            });
+        }
+
+        // New: Delete Vacation Period
+        function deleteVacationPeriod(id) {
+            showMessage('¿Estás seguro de que quieres eliminar este período vacacional?', 'confirm', (result) => {
+                if (result) {
+                    appData.academicYear.vacations = appData.academicYear.vacations.filter(v => v.id !== id);
+                    saveData();
+                }
+            });
+        }
+
+        // New: Delete Teacher Group
+        function deleteTeacherGroup(groupId) {
+            showMessage('¿Estás seguro de que quieres eliminar este grupo? Esto no afectará las guardias ya asignadas, pero el grupo no se usará en futuras generaciones.', 'confirm', (result) => {
+                if (result) {
+                    appData.teacherGroups = appData.teacherGroups.filter(g => g.id !== groupId);
+                    // No need to clear recessGuards here, as they are regenerated
+                    saveData();
+                }
+            });
+        }
+
+
+        // --- Rellenar Dropdowns (Selects) ---
+
+        function populateSelects() {
+            const stageSelects = [
+                document.getElementById('select-stage-subject'),
+                document.getElementById('select-stage-timeslot'),
+                document.getElementById('select-stage-course')
+            ];
+            stageSelects.forEach(select => {
+                const currentSelected = select.value;
+                select.innerHTML = '<option value="">-- Selecciona una Etapa --</option>';
+                appData.stages.forEach(stage => {
+                    const option = document.createElement('option');
+                    option.value = stage.id;
+                    option.textContent = stage.name;
+                    select.appendChild(option);
+                });
+                if (appData.stages.length > 0) {
+                    select.value = currentSelected || appData.stages[0]?.id || '';
+                } else {
+                    select.value = '';
+                }
+                select.dispatchEvent(new Event('change'));
+            });
+
+            const teacherSelects = [
+                document.getElementById('select-teacher-schedule'),
+                document.getElementById('assign-teacher'),
+                document.getElementById('select-teacher-nonlectiva')
+            ];
+            teacherSelects.forEach(select => {
+                const currentSelected = select.value;
+                select.innerHTML = '<option value="">-- Selecciona un Profesor --</option>';
+                appData.teachers.forEach(teacher => {
+                    const option = document.createElement('option');
+                    option.value = teacher.id;
+                    option.textContent = `${teacher.firstName} ${teacher.lastName}`;
+                    select.appendChild(option);
+                });
+                if (appData.teachers.length > 0) {
+                    select.value = currentSelected || appData.teachers[0]?.id || '';
+                } else {
+                    select.value = '';
+                }
+                // Only dispatch change for the teacher schedule display, others are updated implicitly
+                if (select.id === 'select-teacher-schedule') {
+                     select.dispatchEvent(new Event('change'));
+                }
+            });
+
+            const assignCourseSelect = document.getElementById('assign-course');
+            const assignSubjectSelect = document.getElementById('assign-subject');
+            const assignTimeslotSelect = document.getElementById('assign-timeslot');
+            const nonLectivaTimeSlotSelect = document.getElementById('select-timeslot-nonlectiva');
+
+            assignCourseSelect.innerHTML = '<option value="">-- Selecciona Curso --</option>';
+            appData.courses.forEach(course => {
+                const option = document.createElement('option');
+                option.value = course.id;
+                option.textContent = course.name;
+                assignCourseSelect.appendChild(option);
+            });
+            // Also populate the class schedule view select
+            const selectCourseSchedule = document.getElementById('select-course-schedule');
+            const currentSelectedCourse = selectCourseSchedule.value;
+            selectCourseSchedule.innerHTML = '<option value="">-- Selecciona Curso --</option>';
+            appData.courses.forEach(course => {
+                const option = document.createElement('option');
+                option.value = course.id;
+                option.textContent = course.name;
+                selectCourseSchedule.appendChild(option);
+            });
+            if (appData.courses.length > 0) {
+                selectCourseSchedule.value = currentSelectedCourse || appData.courses[0]?.id || '';
+            }
+             else {
+                selectCourseSchedule.value = '';
+            }
+            selectCourseSchedule.dispatchEvent(new Event('change'));
+
+
+            assignSubjectSelect.innerHTML = '<option value="">-- Selecciona Asignatura --</option>';
+            appData.subjects.forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject.id;
+                const stageName = appData.stages.find(s => s.id === subject.stageId)?.name || 'N/A';
+                option.textContent = `${subject.name} (${stageName})`;
+                assignSubjectSelect.appendChild(option);
+            });
+
+            assignTimeslotSelect.innerHTML = '<option value="">-- Selecciona Tramo --</option>';
+            nonLectivaTimeSlotSelect.innerHTML = '<option value="">-- Selecciona Tramo --</option>';
+
+
+            const allUniqueTimeSlots = Array.from(new Set(appData.timeSlots.map(ts => ts.id)))
+                .map(id => appData.timeSlots.find(ts => ts.id === id))
+                .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+            allUniqueTimeSlots.forEach(slot => {
+                const optionAssign = document.createElement('option');
+                optionAssign.value = slot.id;
+                optionAssign.textContent = `${slot.startTime} - ${slot.endTime}`;
+                assignTimeslotSelect.appendChild(optionAssign);
+
+                const optionNonLectiva = document.createElement('option');
+                optionNonLectiva.value = slot.id;
+                optionNonLectiva.textContent = `${slot.startTime} - ${slot.endTime}`;
+                nonLectivaTimeSlotSelect.appendChild(optionNonLectiva);
+            });
+        }
+
+
+        // --- Lógica de Carga de Contenido Dependiente (para selects) ---
+
+        function loadSubjectsForSelectedStage() {
+            renderSubjects();
+        }
+
+        function loadTimeSlotsForSelectedStage() {
+            renderTimeSlots();
+        }
+
+        // --- Gestión de Horarios (Asignación) ---
+
+        async function assignClass() { // Made async to await confirmation
+            const teacherId = document.getElementById('assign-teacher').value;
+            const dayOfWeek = parseInt(document.getElementById('assign-day').value);
+            const timeSlotId = document.getElementById('assign-timeslot').value;
+            const courseId = document.getElementById('assign-course').value;
+            const subjectId = document.getElementById('assign-subject').value;
+            const isSupportTeacher = document.getElementById('is-support-teacher').checked;
+            const groupName = document.getElementById('assign-group-name').value.trim();
+
+            if (!teacherId || isNaN(dayOfWeek) || !timeSlotId || !courseId || !subjectId) {
+                showMessage('Por favor, completa todos los campos obligatorios para asignar la clase.');
+                return;
+            }
+
+            const timeSlot = appData.timeSlots.find(ts => ts.id === timeSlotId);
+            if (!timeSlot) {
+                showMessage('El tramo horario seleccionado no es válido.');
+                return;
+            }
+
+            if (timeSlot.isRecess) {
+                showMessage('No puedes asignar una clase en un tramo horario de recreo. Las guardias de recreo se gestionan automáticamente por grupos.');
+                return;
+            }
+
+            // 1. Check if the teacher is already busy
+            const teacherBusy = appData.schedules.some(s =>
+                s.teacherId === teacherId && s.dayOfWeek === dayOfWeek && s.timeSlotId === timeSlotId
+            ) || appData.nonLectivaHours.some(h =>
+                h.teacherId === teacherId && h.dayOfWeek === dayOfWeek && h.timeSlotId === timeSlotId
+            );
+
+            if (teacherBusy) {
+                showMessage('Este profesor ya tiene una actividad asignada (clase o no lectiva) en este día y tramo horario.');
+                return;
+            }
+
+            // NEW: Check if the course already has ANY class assigned in this time slot
+            const existingClassForCourseSlot = appData.schedules.find(s =>
+                s.courseId === courseId &&
+                s.dayOfWeek === dayOfWeek &&
+                s.timeSlotId === timeSlotId
+            );
+
+            if (existingClassForCourseSlot) {
+                const existingSubject = appData.subjects.find(s => s.id === existingClassForCourseSlot.subjectId)?.name || 'N/A';
+                const existingGroup = existingClassForCourseSlot.groupName ? ` (Grupo: ${existingClassForCourseSlot.groupName})` : '';
+                const confirmMessage = `El curso ya tiene asignada la clase de ${existingSubject}${existingGroup} en este tramo horario. ¿Deseas añadir otra clase de todos modos?`;
+                const userConfirmed = await new Promise(resolve => {
+                    showMessage(confirmMessage, 'confirm', resolve);
+                });
+                if (!userConfirmed) {
+                    return; // User cancelled the assignment
+                }
+            }
+
+
+            // 2. Original Check for conflicts on the course/subject side (Handling Desdoble) - This now acts as a more specific check after the general course slot check.
+            const existingMainClassForCourseSubjectSlotAndGroup = appData.schedules.find(s =>
+                s.courseId === courseId &&
+                s.subjectId === subjectId &&
+                s.dayOfWeek === dayOfWeek &&
+                s.timeSlotId === timeSlotId &&
+                !s.isSupportTeacher && // Only check main classes
+                s.groupName === (groupName || null) // Conflict if groupName is identical or both are null
+            );
+
+            if (!isSupportTeacher && existingMainClassForCourseSubjectSlotAndGroup) {
+                const groupDisplay = groupName ? ` para el grupo '${groupName}'` : '';
+                showMessage(`Ya existe una clase principal para este curso y asignatura${groupDisplay} en este día y tramo horario.`);
+                return;
+            }
+
+            // NEW: Check for assigning a full class when a desdoble already exists (This check is now less critical due to the broader check above, but kept for specific 'full class' vs 'desdoble' warning if needed)
+            if (!isSupportTeacher && !groupName) { // If it's a main class and no group is specified (i.e., full class)
+                const existingDesdobles = appData.schedules.filter(s =>
+                    s.courseId === courseId &&
+                    s.subjectId === subjectId &&
+                    s.dayOfWeek === dayOfWeek &&
+                    s.timeSlotId === timeSlotId &&
+                    !s.isSupportTeacher && // Only consider main classes
+                    s.groupName !== null && s.groupName !== '' // It's a desdoble (has a group name)
+                );
+
+                if (existingDesdobles.length > 0) {
+                    const existingGroups = existingDesdobles.map(d => d.groupName).filter(Boolean).join(', '); // Filter out null/empty
+                    const confirmMessage = `Ya existen desdobles para este curso y asignatura (${existingGroups}) en este tramo horario. ¿Deseas asignar una clase completa de todos modos?`;
+                    const userConfirmed = await new Promise(resolve => {
+                        showMessage(confirmMessage, 'confirm', resolve);
+                    });
+                    if (!userConfirmed) {
+                        return; // User cancelled the assignment
+                    }
+                }
+            }
+
+            // 3. Special handling for support teacher: must have a main class to support
+            if (isSupportTeacher) {
+                const mainClassToSupport = appData.schedules.find(s =>
+                    s.courseId === courseId &&
+                    s.subjectId === subjectId &&
+                    s.dayOfWeek === dayOfWeek &&
+                    s.timeSlotId === timeSlotId &&
+                    !s.isSupportTeacher &&
+                    s.groupName === (groupName || null) // Support applies to a specific group
+                );
+                if (!mainClassToSupport) {
+                    showMessage('Para asignar un profesor de apoyo, debe haber una clase principal (no de apoyo) ya asignada en ese curso, asignatura, grupo, día y tramo horario.');
+                    return;
+                }
+            }
+
+
+            appData.schedules.push({
+                id: generateId(),
+                teacherId,
+                dayOfWeek,
+                timeSlotId,
+                courseId,
+                subjectId,
+                isSupportTeacher,
+                groupName: groupName || null // Store as null if empty string
+            });
+
+            document.getElementById('is-support-teacher').checked = false;
+            document.getElementById('assign-group-name').value = ''; // Clear group name after assignment
+            saveData();
+            loadTeacherSchedule();
+            loadClassSchedule();
+            loadTeacherAvailabilitySchedule(); // Update availability
+            loadPanoramicView(); // Update panoramic view
+        }
+
+        // Helper date functions
+        function getMonday(d) {
+            d = new Date(d);
+            d.setHours(0, 0, 0, 0);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Sunday (0) to be Monday (-6)
+            return new Date(d.setDate(diff));
+        }
+
+        function addDays(date, days) {
+            const result = new Date(date);
+            result.setDate(result.getDate() + days);
+            return result;
+        }
+
+        function isSameDay(d1, d2) {
+            return d1.getFullYear() === d2.getFullYear() &&
+                   d1.getMonth() === d2.getMonth() &&
+                   d1.getDate() === d2.getDate();
+        }
+
+        function isDateBetween(date, start, end) {
+            const d = new Date(date);
+            const s = new Date(start);
+            const e = new Date(end);
+            d.setHours(0,0,0,0);
+            s.setHours(0,0,0,0);
+            e.setHours(0,0,0,0);
+            return d >= s && d <= e;
+        }
+
+        function isWeekExcluded(weekStartDate, holidays, vacations) {
+            // Check if any day in the week (Mon-Fri) is a holiday or within a vacation period
+            for (let i = 0; i < 5; i++) { // Check Mon-Fri
+                const currentDay = addDays(weekStartDate, i);
+                const isCurrentDayHoliday = holidays.some(h => isSameDay(new Date(h.date), currentDay));
+                const isCurrentDayVacation = vacations.some(v => isDateBetween(currentDay, v.startDate, v.endDate));
+
+                if (isCurrentDayHoliday || isCurrentDayVacation) {
+                    return true; // Exclude the week if any workday is a holiday or vacation
+                }
+            }
+            return false;
+        }
+
+        function getSchoolWeeks(academicYear) {
+            const weeks = [];
+            if (!academicYear.startDate || !academicYear.endDate) {
+                return weeks;
+            }
+
+            let currentWeekStart = getMonday(new Date(academicYear.startDate));
+            const academicYearEnd = new Date(academicYear.endDate);
+            academicYearEnd.setHours(23, 59, 59, 999); // Ensure end of day
+
+            while (currentWeekStart <= academicYearEnd) {
+                // Only consider weeks that start on or before the academic year end
+                if (currentWeekStart > academicYearEnd) break;
+
+                // Check if the entire week (Mon-Fri) is excluded
+                if (!isWeekExcluded(currentWeekStart, academicYear.holidays, academicYear.vacations)) {
+                    weeks.push(currentWeekStart.toISOString().split('T')[0]); // Store as YYYY-MM-DD string
+                }
+                currentWeekStart = addDays(currentWeekStart, 7); // Move to next Monday
+            }
+            return weeks;
+        }
+
+        // Populate the new week selector dropdowns (kept for future potential use, though not directly used now)
+        function populateWeekSelector() {
+            const schoolWeeks = getSchoolWeeks(appData.academicYear);
+            // These elements are no longer present in the HTML, so this part won't execute
+            // const selectWeekSchedule = document.getElementById('select-week-schedule');
+            // const selectWeekClassSchedule = document.getElementById('select-week-class-schedule');
+        }
+
+
+        // Modificación clave: Cargar horario semanal del profesor (ahora genérico)
+        function loadTeacherSchedule() {
+            const teacherId = document.getElementById('select-teacher-schedule').value;
+            const scheduleDisplay = document.getElementById('teacher-schedule-display');
+            scheduleDisplay.innerHTML = ''; // Limpiar el grid actual
+
+            if (!teacherId) {
+                scheduleDisplay.textContent = 'Selecciona un profesor para ver su horario semanal.';
+                return;
+            }
+
+            const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+            const dayValues = [1, 2, 3, 4, 5]; // Corresponde a los valores de dayOfWeek
+
+            // Obtener todos los tramos horarios únicos, ordenados
+            const allUniqueTimeSlots = Array.from(new Set(appData.timeSlots.map(ts => ts.id)))
+                .map(id => appData.timeSlots.find(ts => ts.id === id))
+                .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+            // Si no hay tramos horarios definidos, no podemos construir el grid
+            if (allUniqueTimeSlots.length === 0) {
+                scheduleDisplay.textContent = 'No hay tramos horarios definidos. Por favor, añade tramos horarios primero en la sección "1. Etapas".';
+                return;
+            }
+
+            // Check if there's any schedule data for this teacher
+            const teacherHasSchedule = appData.schedules.some(s => s.teacherId === teacherId) ||
+                                       appData.nonLectivaHours.some(h => h.teacherId === teacherId);
+
+            if (!teacherHasSchedule && appData.timeSlots.length > 0) { // Only show this message if there are time slots but no schedules
+                scheduleDisplay.textContent = 'Este profesor no tiene horarios asignados. Asigna clases u horas no lectivas en esta sección.';
+                scheduleDisplay.style.display = 'block'; // Ensure it's visible to show the message
+                return;
+            } else if (appData.timeSlots.length === 0) {
+                 scheduleDisplay.textContent = 'No hay tramos horarios definidos. Por favor, añade tramos horarios primero en la sección "1. Etapas".';
+                 scheduleDisplay.style.display = 'block';
+                 return;
+            }
+            else {
+                scheduleDisplay.style.display = 'grid'; // Ensure it's a grid if there's data
+            }
+
+            // Establecer el número de columnas para el grid (1 para la etiqueta de tiempo + 5 para los días)
+            scheduleDisplay.style.gridTemplateColumns = `100px repeat(${daysOfWeek.length}, minmax(100px, 1fr))`;
+
+            // Crear encabezados del grid (esquina superior izquierda vacía + días)
+            const cornerHeader = document.createElement('div');
+            cornerHeader.className = 'grid-header-cell';
+            scheduleDisplay.appendChild(cornerHeader); // Celda vacía en la esquina
+
+            daysOfWeek.forEach(dayName => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'grid-header-cell';
+                dayHeader.textContent = dayName;
+                scheduleDisplay.appendChild(dayHeader);
+            });
+
+            // Rellenar el cuerpo del grid: Tramos horarios por fila, días por columna
+            allUniqueTimeSlots.forEach(slot => {
+                // Etiqueta del tramo horario (primera columna de cada fila)
+                const timeLabel = document.createElement('div');
+                timeLabel.className = 'time-slot-label';
+                timeLabel.textContent = `${slot.startTime}-${slot.endTime}`;
+                scheduleDisplay.appendChild(timeLabel);
+
+                // Celdas para cada día de la semana para este tramo horario
+                dayValues.forEach(dayIndex => {
+                    const cell = document.createElement('div');
+                    cell.className = 'schedule-cell';
+
+                    // Filter schedules and nonLectivaHours for this teacher, day, and slot
+                    const activitiesInSlot = appData.schedules.filter(s =>
+                        s.teacherId === teacherId && s.dayOfWeek === dayIndex && s.timeSlotId === slot.id
+                    ).concat(
+                        appData.nonLectivaHours.filter(h =>
+                            h.teacherId === teacherId && h.dayOfWeek === dayIndex && h.timeSlotId === slot.id
+                        )
+                    ).sort((a, b) => { // Sort activities within the cell for consistent display
+                        if (a.subjectId && b.subjectId) return 0; // Class vs Class - no specific sort
+                        if (a.subjectId) return -1; // Class before Non-Lectiva
+                        if (b.subjectId) return 1; // Non-Lectiva after Class
+                        return 0;
+                    });
+
+
+                    if (slot.isRecess) {
+                        cell.classList.add('recess-slot');
+                        cell.innerHTML = 'RECREO';
+                    } else if (activitiesInSlot.length > 0) {
+                        activitiesInSlot.forEach(entry => {
+                            const entryDiv = document.createElement('div');
+                            entryDiv.style.marginBottom = '5px'; // Small margin between entries
+
+                            if (entry.subjectId) { // It's a schedule entry (class)
+                                const course = appData.courses.find(c => c.id === entry.courseId);
+                                const subject = appData.subjects.find(s => s.id === entry.subjectId);
+                                const subjectStage = appData.stages.find(st => st.id === subject?.stageId)?.name || 'N/A';
+                                const groupDisplay = entry.groupName ? `<br>(${entry.groupName})` : '';
+                                const typeLabel = entry.isSupportTeacher ? 'Apoyo' : 'Clase'; // Explicit label
+
+                                entryDiv.innerHTML = `
+                                    <strong>${typeLabel}:</strong> ${subject?.name || 'N/A'}<br>
+                                    ${course?.name || 'N/A'} (${subjectStage})${groupDisplay}
+                                    <button class="delete-btn" onclick="deleteSchedule('${entry.id}')">X</button>
+                                `;
+                                if (subject) {
+                                    const subjectClassName = `subject-${subject.name.toLowerCase().replace(/\s/g, '-')}`;
+                                    entryDiv.classList.add(subjectClassName);
+                                }
+                            } else { // It's a nonLectivaHour entry
+                                entryDiv.innerHTML = `
+                                    <strong>No Lectiva:</strong> ${entry.description}<br>
+                                    <small>(${entry.type === 'support' ? 'Apoyo' : entry.type === 'coordination' ? 'Coordinación' : 'Reunión'})</small>
+                                    <button class="delete-btn" onclick="deleteNonLectivaHour('${entry.id}')">X</button>
+                                `;
+                                entryDiv.classList.add('non-lectiva');
+                            }
+                            cell.appendChild(entryDiv);
+                        });
+                        cell.style.flexDirection = 'column'; // Ensure content stacks vertically
+                        cell.style.justifyContent = 'flex-start'; // Align content to top
+                        cell.style.alignItems = 'flex-start'; // Align content to left
+                        cell.style.textAlign = 'left';
+                        cell.style.padding = '8px'; // Add some padding back
+                    } else {
+                        cell.textContent = 'Libre';
+                    }
+                    scheduleDisplay.appendChild(cell);
+                });
+            });
+        }
+
+        // New: Load Class Schedule (now generic)
+        function loadClassSchedule() {
+            const courseId = document.getElementById('select-course-schedule').value;
+            const scheduleDisplay = document.getElementById('class-schedule-display');
+            scheduleDisplay.innerHTML = ''; // Limpiar el grid actual
+
+            if (!courseId) {
+                scheduleDisplay.textContent = 'Selecciona un curso para ver su horario semanal.';
+                return;
+            }
+
+            const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+            const dayValues = [1, 2, 3, 4, 5];
+
+            const allUniqueTimeSlots = Array.from(new Set(appData.timeSlots.map(ts => ts.id)))
+                .map(id => appData.timeSlots.find(ts => ts.id === id))
+                .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+            if (allUniqueTimeSlots.length === 0) {
+                scheduleDisplay.textContent = 'No hay tramos horarios definidos. Por favor, añade tramos horarios primero en la sección "1. Etapas".';
+                return;
+            }
+
+            // Check if there's any schedule data for this course
+            const courseHasSchedule = appData.schedules.some(s => s.courseId === courseId);
+
+            if (!courseHasSchedule && appData.timeSlots.length > 0) { // Only show this message if there are time slots but no schedules
+                scheduleDisplay.textContent = 'Este curso no tiene horarios asignados. Asigna clases en la sección "4. Horario Profesor".';
+                scheduleDisplay.style.display = 'block'; // Ensure it's visible to show the message
+                return;
+            } else if (appData.timeSlots.length === 0) {
+                 scheduleDisplay.textContent = 'No hay tramos horarios definidos. Por favor, añade tramos horarios primero en la sección "1. Etapas".';
+                 scheduleDisplay.style.display = 'block';
+                 return;
+            }
+            else {
+                scheduleDisplay.style.display = 'grid'; // Ensure it's a grid if there's data
+            }
+
+            // Establecer el número de columnas para el grid (1 para la etiqueta de tiempo + 5 para los días)
+            scheduleDisplay.style.gridTemplateColumns = `100px repeat(${daysOfWeek.length}, minmax(100px, 1fr))`;
+
+            const cornerHeader = document.createElement('div');
+            cornerHeader.className = 'grid-header-cell';
+            scheduleDisplay.appendChild(cornerHeader);
+
+            daysOfWeek.forEach(dayName => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'grid-header-cell';
+                dayHeader.textContent = dayName;
+                scheduleDisplay.appendChild(dayHeader);
+            });
+
+            allUniqueTimeSlots.forEach(slot => {
+                const timeLabel = document.createElement('div');
+                timeLabel.className = 'time-slot-label';
+                timeLabel.textContent = `${slot.startTime}-${slot.endTime}`;
+                scheduleDisplay.appendChild(timeLabel);
+
+                dayValues.forEach(dayIndex => {
+                    const cell = document.createElement('div');
+                    cell.className = 'schedule-cell';
+                    cell.style.flexDirection = 'column'; // Ensure content stacks vertically
+                    cell.style.justifyContent = 'flex-start'; // Align content to top
+                    cell.style.alignItems = 'flex-start'; // Align content to left
+                    cell.style.textAlign = 'left';
+
+
+                    if (slot.isRecess) {
+                        cell.classList.add('recess-slot');
+                        cell.innerHTML = 'RECREO';
+                    } else {
+                        const classesInSlot = appData.schedules.filter(s =>
+                            s.courseId === courseId && s.dayOfWeek === dayIndex && s.timeSlotId === slot.id
+                        );
+
+                        if (classesInSlot.length > 0) {
+                            // Group classes by subject and then by groupName
+                            const groupedClasses = {};
+                            classesInSlot.forEach(s => {
+                                if (!groupedClasses[s.subjectId]) groupedClasses[s.subjectId] = {};
+                                const groupKey = s.groupName || 'main';
+                                if (!groupedClasses[s.subjectId][groupKey]) groupedClasses[s.subjectId][groupKey] = [];
+                                groupedClasses[s.subjectId][groupKey].push(s);
+                            });
+
+                            let activities = [];
+                            for (const subjectId in groupedClasses) {
+                                const subject = appData.subjects.find(s => s.id === subjectId);
+                                const subjectStage = appData.stages.find(st => st.id === subject?.stageId)?.name || 'N/A';
+
+                                for (const groupKey in groupedClasses[subjectId]) {
+                                    const schedulesForGroup = groupedClasses[subjectId][groupKey];
+                                    
+                                    const classDiv = document.createElement('div');
+                                    classDiv.style.marginBottom = '5px';
+
+                                    const groupDisplay = groupKey !== 'main' ? `(${groupKey}) ` : '';
+                                    let teachersDisplay = [];
+                                    schedulesForGroup.forEach(sch => {
+                                        const teacher = appData.teachers.find(t => t.id === sch.teacherId);
+                                        if (teacher) {
+                                            teachersDisplay.push(`${sch.isSupportTeacher ? 'Apoyo: ' : ''}${teacher.firstName} ${teacher.lastName}`);
+                                        }
+                                    });
+
+                                    classDiv.innerHTML = `
+                                        ${groupDisplay}${subject?.name || 'N/A'} (${subjectStage})<br>
+                                        ${teachersDisplay.join('<br>')}<br>
+                                        ${schedulesForGroup.map(sch => `<button class="delete-btn" onclick="deleteSchedule('${sch.id}')">X</button>`).join('')}
+                                    `;
+
+                                    if (subject) {
+                                        const subjectClassName = `subject-${subject.name.toLowerCase().replace(/\s/g, '-')}`;
+                                        classDiv.classList.add(subjectClassName);
+                                    }
+                                    cell.appendChild(classDiv);
+                                }
+                            }
+                        } else {
+                            cell.textContent = 'Libre';
+                        }
+                    }
+                    scheduleDisplay.appendChild(cell);
+                });
+            });
+        }
+
+
+        // New: Generate Recess Guards (with group rotation)
+        function generateRecessGuards() {
+            showMessage('Esto eliminará todas las guardias de recreo existentes y generará unas nuevas basadas en la rotación de grupos. ¿Continuar?', 'confirm', (result) => {
+                if (!result) {
+                    return;
+                }
+
+                if (appData.teacherGroups.length === 0) {
+                    showMessage('No hay grupos de guardia formados. Por favor, forma los grupos primero.');
+                    return;
+                }
+                if (!appData.academicYear.startDate || !appData.academicYear.endDate) {
+                    showMessage('Por favor, define las fechas de inicio y fin del curso en la sección "Gestión del Año Académico".');
+                    return;
+                }
+
+                appData.recessGuards = []; // Clear existing recess guard instances
+
+                const schoolWeeks = getSchoolWeeks(appData.academicYear);
+                if (schoolWeeks.length === 0) {
+                    showMessage('No se encontraron semanas lectivas válidas en el calendario académico. Asegúrate de que las fechas del curso y las festividades/vacaciones estén configuradas correctamente.');
+                    return;
+                }
+
+                let currentGroupIndex = 0;
+                const daysOfWeek = [1, 2, 3, 4, 5]; // Lunes a Viernes
+                const recessTimeSlots = appData.timeSlots.filter(ts => ts.isRecess);
+
+                if (recessTimeSlots.length === 0) {
+                    showMessage('No hay tramos horarios de recreo definidos. Define tramos de recreo en la sección "Gestión de Etapas".');
+                    return;
+                }
+
+                schoolWeeks.forEach(weekStartDateString => {
+                    const assignedGroup = appData.teacherGroups[currentGroupIndex];
+                    if (!assignedGroup) {
+                        // This should ideally not happen if teacherGroups is not empty and index is managed correctly
+                        console.warn('No group available for assignment. This indicates an issue with group management or rotation logic.');
+                        return;
+                    }
+
+                    // For each recess slot and day in the week, assign this group
+                    recessTimeSlots.forEach(slot => {
+                        daysOfWeek.forEach(dayIndex => {
+                            // Check if any teacher in the assigned group has a conflict for this specific slot
+                            const hasConflict = assignedGroup.teacherIds.some(teacherId =>
+                                appData.schedules.some(s =>
+                                    s.teacherId === teacherId && s.dayOfWeek === dayIndex && s.timeSlotId === slot.id
+                                ) || appData.nonLectivaHours.some(h =>
+                                    h.teacherId === teacherId && h.dayOfWeek === dayIndex && h.timeSlotId === slot.id
+                                )
+                            );
+
+                            if (!hasConflict) {
+                                appData.recessGuards.push({
+                                    id: generateId(),
+                                    weekStartDate: weekStartDateString,
+                                    groupId: assignedGroup.id,
+                                    dayOfWeek: dayIndex,
+                                    timeSlotId: slot.id,
+                                    type: 'generated'
+                                });
+                            } else {
+                                console.warn(`Conflicto para el grupo ${assignedGroup.name} en la semana ${weekStartDateString}, día ${dayIndex}, tramo ${slot.startTime}-${slot.endTime}. Se omite la asignación para este tramo.`);
+                            }
+                        });
+                    });
+
+                    currentGroupIndex = (currentGroupIndex + 1) % appData.teacherGroups.length;
+                });
+
+                saveData();
+                showMessage('Guardias de recreo generadas con éxito para todo el año académico.');
+                populateWeekSelector(); // Repopulate week selector and trigger schedule loads
+            });
+        }
+
+        // New: Load Teacher Availability Schedule
+        function loadTeacherAvailabilitySchedule() {
+            // No longer uses a selected week, shows generic availability
+            const availabilityDisplay = document.getElementById('teacher-availability-display');
+            availabilityDisplay.innerHTML = ''; // Clear the current grid
+
+            const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+            const dayValues = [1, 2, 3, 4, 5];
+
+            const allUniqueTimeSlots = Array.from(new Set(appData.timeSlots.map(ts => ts.id)))
+                .map(id => appData.timeSlots.find(ts => ts.id === id))
+                .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+            if (allUniqueTimeSlots.length === 0) {
+                availabilityDisplay.textContent = 'No hay tramos horarios definidos. Por favor, añade tramos horarios primero.';
+                return;
+            }
+            if (appData.teachers.length === 0) {
+                availabilityDisplay.textContent = 'No hay profesores definidos. Por favor, añade profesores primero.';
+                return;
+            }
+
+            // Set grid columns (1 for time label + 5 for days)
+            availabilityDisplay.style.gridTemplateColumns = `100px repeat(${daysOfWeek.length}, minmax(120px, 1fr))`;
+
+            // Create grid headers (empty top-left corner + days)
+            const cornerHeader = document.createElement('div');
+            cornerHeader.className = 'grid-header-cell';
+            availabilityDisplay.appendChild(cornerHeader);
+
+            daysOfWeek.forEach(dayName => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'grid-header-cell';
+                dayHeader.textContent = dayName;
+                availabilityDisplay.appendChild(dayHeader);
+            });
+
+            // Populate the grid body: Time slots per row, days per column
+            allUniqueTimeSlots.forEach(slot => {
+                const timeLabel = document.createElement('div');
+                timeLabel.className = 'time-slot-label';
+                timeLabel.textContent = `${slot.startTime}-${slot.endTime}`;
+                availabilityDisplay.appendChild(timeLabel);
+
+                dayValues.forEach(dayIndex => {
+                    const cell = document.createElement('div');
+                    cell.className = 'availability-cell';
+
+                    if (slot.isRecess) {
+                        cell.classList.add('recess-slot');
+                        cell.innerHTML = '<div class="status-recess-slot-info">RECREO</div>';
+                    } else {
+                        const cellContent = [];
+                        appData.teachers.forEach(teacher => {
+                            const teacherShortName = `${teacher.firstName.charAt(0)}. ${teacher.lastName}`;
+                            const teacherId = teacher.id;
+
+                            const scheduleEntry = appData.schedules.find(s =>
+                                s.teacherId === teacherId && s.dayOfWeek === dayIndex && s.timeSlotId === slot.id
+                            );
+                            const nonLectivaEntry = appData.nonLectivaHours.find(h =>
+                                h.teacherId === teacherId && h.dayOfWeek === dayIndex && h.timeSlotId === slot.id
+                            );
+                            
+                            // Only show teachers who are truly free or specifically marked as support
+                            if (!scheduleEntry && !nonLectivaEntry) { // Truly free
+                                cellContent.push(`<div class="status-free">${teacherShortName}: Libre</div>`);
+                            } else if (scheduleEntry && scheduleEntry.isSupportTeacher) {
+                                const course = appData.courses.find(c => c.id === scheduleEntry.courseId);
+                                const subject = appData.subjects.find(s => s.id === scheduleEntry.subjectId);
+                                const groupDisplay = scheduleEntry.groupName ? ` (${scheduleEntry.groupName})` : '';
+                                cellContent.push(`<div class="status-support">${teacherShortName}: Apoyo (${subject?.name || 'N/A'} ${course?.name || 'N/A'}${groupDisplay})</div>`);
+                            }
+                            // If scheduleEntry exists and is NOT support, or if nonLectivaEntry exists,
+                            // we do NOT add them to the availability list for this slot (they are occupied).
+                        });
+                        cell.innerHTML = cellContent.join('');
+                    }
+                    availabilityDisplay.appendChild(cell);
+                });
+            });
+        }
+
+        // New: Load Panoramic View
+        function loadPanoramicView() {
+            const panoramicDisplay = document.getElementById('panoramic-schedule-display');
+            panoramicDisplay.innerHTML = ''; // Clear the current grid
+
+            const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+            const dayValues = [1, 2, 3, 4, 5];
+
+            const allUniqueTimeSlots = Array.from(new Set(appData.timeSlots.map(ts => ts.id)))
+                .map(id => appData.timeSlots.find(ts => ts.id === id))
+                .sort((a, b) => a.startTime.localeCompare(b.startTime)); // Sort ascending (earliest to latest)
+
+            if (allUniqueTimeSlots.length === 0) {
+                panoramicDisplay.textContent = 'No hay tramos horarios definidos. Por favor, añade tramos horarios primero.';
+                return;
+            }
+            if (appData.teachers.length === 0 && appData.courses.length === 0) {
+                panoramicDisplay.textContent = 'No hay profesores ni cursos definidos. Por favor, añade profesores y cursos primero.';
+                return;
+            }
+
+            // Set grid columns (1 for time label + 5 for days)
+            panoramicDisplay.style.gridTemplateColumns = `100px repeat(${daysOfWeek.length}, minmax(120px, 1fr))`;
+
+            // Create grid headers (empty top-left corner + days)
+            const cornerHeader = document.createElement('div');
+            cornerHeader.className = 'grid-header-cell';
+            panoramicDisplay.appendChild(cornerHeader);
+
+            daysOfWeek.forEach(dayName => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'grid-header-cell';
+                dayHeader.textContent = dayName;
+                panoramicDisplay.appendChild(dayHeader);
+            });
+
+            // Populate the grid body: Time slots per row, days per column
+            allUniqueTimeSlots.forEach(slot => {
+                const timeLabel = document.createElement('div');
+                timeLabel.className = 'time-slot-label';
+                timeLabel.textContent = `${slot.startTime}-${slot.endTime}`;
+                panoramicDisplay.appendChild(timeLabel);
+
+                dayValues.forEach(dayIndex => {
+                    const cell = document.createElement('div');
+                    cell.className = 'panoramic-cell';
+
+                    if (slot.isRecess) {
+                        cell.classList.add('recess-slot');
+                        cell.innerHTML = '<div class="recess-slot-info">RECREO</div>';
+                    } else {
+                        const freeTeachers = [];
+                        const supportTeachers = [];
+                        appData.teachers.forEach(teacher => {
+                            const teacherBusy = appData.schedules.some(s =>
+                                s.teacherId === teacher.id && s.dayOfWeek === dayIndex && s.timeSlotId === slot.id
+                            ) || appData.nonLectivaHours.some(h =>
+                                h.teacherId === teacher.id && h.dayOfWeek === dayIndex && h.timeSlotId === slot.id
+                            );
+
+                            if (!teacherBusy) {
+                                freeTeachers.push(`${teacher.firstName.charAt(0)}. ${teacher.lastName}`);
+                            } else {
+                                // Check if the teacher is assigned as a support teacher for this slot
+                                const supportSchedule = appData.schedules.find(s =>
+                                    s.teacherId === teacher.id && s.dayOfWeek === dayIndex && s.timeSlotId === slot.id && s.isSupportTeacher
+                                );
+                                if (supportSchedule) {
+                                    supportTeachers.push(`${teacher.firstName.charAt(0)}. ${teacher.lastName}`);
+                                }
+                            }
+                        });
+
+                        const freeCoursesAndGroups = [];
+                        appData.courses.forEach(course => {
+                            // A course/group is "free" if no main teacher is assigned to it for this slot
+                            // We need to check all possible groupNames for this course
+                            const assignedGroups = new Set();
+                            appData.schedules.filter(s =>
+                                s.courseId === course.id &&
+                                s.dayOfWeek === dayIndex &&
+                                s.timeSlotId === slot.id &&
+                                !s.isSupportTeacher // Only consider main classes
+                            ).forEach(s => assignedGroups.add(s.groupName || 'main'));
+
+                            // For simplicity, we assume if ANY main class is assigned for a course, it's not "free"
+                            // unless we have defined groups.
+                            // If no main class is assigned for the base course, it's free.
+                            if (!assignedGroups.has('main') && !assignedGroups.has(null)) { // If the "main" group is not assigned
+                                freeCoursesAndGroups.push(course.name);
+                            }
+
+                            // More advanced: if a course is desdobled, show which groups are still free.
+                            // This would require a more complex structure for courses, to define available groups.
+                            // For now, if 'main' or 'null' group is not assigned, the course is considered free.
+                        });
+
+
+                        let contentHtml = '';
+                        if (freeTeachers.length > 0) {
+                            contentHtml += `<div class="section-title">Profesores Libres:</div>`;
+                            freeTeachers.forEach(name => {
+                                contentHtml += `<div class="free-teacher">${name}</div>`;
+                            });
+                        }
+                        if (supportTeachers.length > 0) {
+                            contentHtml += `<div class="section-title">Profesores Apoyo:</div>`;
+                            supportTeachers.forEach(name => {
+                                contentHtml += `<div class="support-teacher">${name}</div>`;
+                            });
+                        }
+                        if (freeCoursesAndGroups.length > 0) {
+                            contentHtml += `<div class="section-title">Cursos Libres:</div>`;
+                            freeCoursesAndGroups.forEach(name => {
+                                contentHtml += `<div class="free-course">${name}</div>`;
+                            });
+                        }
+
+                        if (contentHtml === '') {
+                            cell.textContent = 'Todo Ocupado'; // Or some other indicator
+                            cell.style.backgroundColor = '#f8d7da'; /* Light red for fully occupied */
+                        } else {
+                            cell.innerHTML = contentHtml;
+                        }
+                    }
+                    panoramicDisplay.appendChild(cell);
+                });
+            });
+        }
+
+
+        // --- Exportar e Importar Datos ---
+
+        function exportData() {
+            const dataStr = JSON.stringify(appData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `horarios_backup_${new Date().toISOString().replace(/:/g, '-')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function importData() {
+            const fileInput = document.getElementById('import-file');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showMessage('Por favor, selecciona un archivo JSON para importar.');
+                return;
+            }
+
+            showMessage('¡ADVERTENCIA! Al importar los datos, se SOBRESCRIBIRÁN TODOS los datos actuales. ¿Estás seguro?', 'confirm', (result) => {
+                if (!result) {
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const imported = JSON.parse(event.target.result);
+
+                        const requiredKeys = ['stages', 'subjects', 'courses', 'teachers', 'timeSlots', 'schedules', 'nonLectivaHours', 'recessGuards', 'academicYear', 'teacherGroups'];
+                        const isValid = requiredKeys.every(key => imported.hasOwnProperty(key)); // Check for property existence
+                        if (!isValid) {
+                             showMessage('El archivo JSON no tiene la estructura esperada para la importación. Faltan claves principales.');
+                             return;
+                        }
+                        // Further validation for arrays within academicYear
+                        if (!Array.isArray(imported.academicYear?.holidays) || !Array.isArray(imported.academicYear?.vacations) || !Array.isArray(imported.teacherGroups)) {
+                            showMessage('El archivo JSON no tiene la estructura esperada para la importación (academicYear.holidays, academicYear.vacations o teacherGroups no son arrays).');
+                            return;
+                        }
+
+
+                        appData = imported;
+                        saveData();
+                        showMessage('Datos importados correctamente.');
+                        fileInput.value = '';
+                    } catch (e) {
+                        showMessage('Error al leer o parsear el archivo JSON. Asegúrate de que es un JSON válido.');
+                        console.error('Error importing:', e);
+                    }
+                };
+                reader.readAsText(file);
+            });
+        }
+
+        /**
+         * Generates a CSV string from an array of objects.
+         * @param {Array<Object>} data - The array of objects to convert.
+         * @param {Array<string>} headers - An array of strings for the CSV header.
+         * @returns {string} The CSV string.
+         */
+        function convertToCsv(data, headers) {
+            const csvRows = [];
+            // Add header row
+            csvRows.push(headers.map(header => `"${header}"`).join(';')); // Use semicolon as separator for Excel compatibility with Spanish locale
+
+            // Add data rows
+            for (const row of data) {
+                const values = headers.map(header => {
+                    const value = row[header] !== undefined && row[header] !== null ? row[header] : '';
+                    // Escape double quotes and enclose in double quotes
+                    return `"${String(value).replace(/"/g, '""')}"`;
+                });
+                csvRows.push(values.join(';'));
+            }
+            return csvRows.join('\n');
+        }
+
+        /**
+         * Triggers a file download in the browser.
+         * @param {string} filename - The name of the file to download.
+         * @param {string} text - The content of the file.
+         * @param {string} mimeType - The MIME type of the file (e.g., 'text/csv').
+         */
+        function downloadFile(filename, text, mimeType) {
+            // Prepend UTF-8 BOM to ensure Excel correctly interprets the encoding
+            const bom = '\uFEFF';
+            const blob = new Blob([bom + text], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        /**
+         * Exports the currently displayed teacher's schedule to a CSV file.
+         */
+        function exportTeacherScheduleToCsv() {
+            const teacherId = document.getElementById('select-teacher-schedule').value;
+            if (!teacherId) {
+                showMessage('Por favor, selecciona un profesor para exportar su horario.');
+                return;
+            }
+
+            const teacher = appData.teachers.find(t => t.id === teacherId);
+            if (!teacher) {
+                showMessage('Profesor no encontrado.');
+                return;
+            }
+
+            const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+            const dayValues = [1, 2, 3, 4, 5];
+
+            const allUniqueTimeSlots = Array.from(new Set(appData.timeSlots.map(ts => ts.id)))
+                .map(id => appData.timeSlots.find(ts => ts.id === id))
+                .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+            if (allUniqueTimeSlots.length === 0) {
+                showMessage('No hay tramos horarios definidos para exportar.');
+                return;
+            }
+
+            // Prepare CSV data
+            const headers = ['Tramo Horario'].concat(daysOfWeek);
+            const csvData = [];
+
+            allUniqueTimeSlots.forEach(slot => {
+                const row = { 'Tramo Horario': `${slot.startTime}-${slot.endTime}` };
+                dayValues.forEach(dayIndex => {
+                    let cellContent = '';
+                    if (slot.isRecess) {
+                        cellContent = 'RECREO';
+                    } else {
+                        const activitiesInSlot = appData.schedules.filter(s =>
+                            s.teacherId === teacherId && s.dayOfWeek === dayIndex && s.timeSlotId === slot.id
+                        ).concat(
+                            appData.nonLectivaHours.filter(h =>
+                                h.teacherId === teacherId && h.dayOfWeek === dayIndex && h.timeSlotId === slot.id
+                            )
+                        ).sort((a, b) => {
+                            if (a.subjectId && b.subjectId) return 0;
+                            if (a.subjectId) return -1;
+                            if (b.subjectId) return 1;
+                            return 0;
+                        });
+
+                        if (activitiesInSlot.length > 0) {
+                            cellContent = activitiesInSlot.map(entry => {
+                                if (entry.subjectId) {
+                                    const course = appData.courses.find(c => c.id === entry.courseId);
+                                    const subject = appData.subjects.find(s => s.id === entry.subjectId);
+                                    const groupDisplay = entry.groupName ? ` (${entry.groupName})` : '';
+                                    const typeLabel = entry.isSupportTeacher ? 'Apoyo' : 'Clase';
+                                    return `${typeLabel}: ${subject?.name || 'N/A'} - ${course?.name || 'N/A'}${groupDisplay}`;
+                                } else {
+                                    const typeDisplay = entry.type === 'support' ? 'Apoyo' : entry.type === 'coordination' ? 'Coordinación' : 'Reunión';
+                                    return `No Lectiva: ${entry.description} (${typeDisplay})`;
+                                }
+                            }).join(' | '); // Use pipe to separate multiple activities in one cell
+                        } else {
+                            cellContent = 'Libre';
+                        }
+                    }
+                    row[daysOfWeek[dayIndex - 1]] = cellContent;
+                });
+                csvData.push(row);
+            });
+
+            const csvString = convertToCsv(csvData, headers);
+            const filename = `Horario_Profesor_${teacher.firstName}_${teacher.lastName}_${new Date().toISOString().split('T')[0]}.csv`;
+            downloadFile(filename, csvString, 'text/csv;charset=utf-8;');
+            showMessage('Horario del profesor exportado a Excel (CSV) con éxito.');
+        }
+
+        /**
+         * Exports the currently displayed class's schedule to a CSV file.
+         */
+        function exportClassScheduleToCsv() {
+            const courseId = document.getElementById('select-course-schedule').value;
+            if (!courseId) {
+                showMessage('Por favor, selecciona un curso para exportar su horario.');
+                return;
+            }
+
+            const course = appData.courses.find(c => c.id === courseId);
+            if (!course) {
+                showMessage('Curso no encontrado.');
+                return;
+            }
+
+            const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+            const dayValues = [1, 2, 3, 4, 5];
+
+            const allUniqueTimeSlots = Array.from(new Set(appData.timeSlots.map(ts => ts.id)))
+                .map(id => appData.timeSlots.find(ts => ts.id === id))
+                .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+            if (allUniqueTimeSlots.length === 0) {
+                showMessage('No hay tramos horarios definidos para exportar.');
+                return;
+            }
+
+            // Prepare CSV data
+            const headers = ['Tramo Horario'].concat(daysOfWeek);
+            const csvData = [];
+
+            allUniqueTimeSlots.forEach(slot => {
+                const row = { 'Tramo Horario': `${slot.startTime}-${slot.endTime}` };
+                dayValues.forEach(dayIndex => {
+                    let cellContent = '';
+                    if (slot.isRecess) {
+                        cellContent = 'RECREO';
+                    } else {
+                        const classesInSlot = appData.schedules.filter(s =>
+                            s.courseId === course.id && s.dayOfWeek === dayIndex && s.timeSlotId === slot.id
+                        );
+
+                        if (classesInSlot.length > 0) {
+                            const groupedClasses = {};
+                            classesInSlot.forEach(s => {
+                                if (!groupedClasses[s.subjectId]) groupedClasses[s.subjectId] = {};
+                                const groupKey = s.groupName || 'main';
+                                if (!groupedClasses[s.subjectId][groupKey]) groupedClasses[s.subjectId][groupKey] = [];
+                                groupedClasses[s.subjectId][groupKey].push(s);
+                            });
+
+                            let activities = [];
+                            for (const subjectId in groupedClasses) {
+                                const subject = appData.subjects.find(s => s.id === subjectId);
+                                for (const groupKey in groupedClasses[subjectId]) {
+                                    const schedulesForGroup = groupedClasses[subjectId][groupKey];
+                                    const groupDisplay = groupKey !== 'main' ? ` (${groupKey})` : '';
+                                    let teachersDisplay = [];
+                                    schedulesForGroup.forEach(sch => {
+                                        const teacher = appData.teachers.find(t => t.id === sch.teacherId);
+                                        if (teacher) {
+                                            teachersDisplay.push(`${sch.isSupportTeacher ? 'Apoyo: ' : ''}${teacher.firstName} ${teacher.lastName}`);
+                                        }
+                                    });
+                                    activities.push(`${subject?.name || 'N/A'}${groupDisplay}: ${teachersDisplay.join(', ')}`);
+                                }
+                            }
+                            cellContent = activities.join(' | ');
+                        } else {
+                            cellContent = 'Libre';
+                        }
+                    }
+                    row[daysOfWeek[dayIndex - 1]] = cellContent;
+                });
+                csvData.push(row);
+            });
+
+            const csvString = convertToCsv(csvData, headers);
+            const filename = `Horario_Clase_${course.name}_${new Date().toISOString().split('T')[0]}.csv`;
+            downloadFile(filename, csvString, 'text/csv;charset=utf-8;');
+            showMessage('Horario de la clase exportado a Excel (CSV) con éxito.');
+        }
+
+        /**
+         * Exports all teacher schedules to a single CSV file, with each teacher's schedule separated.
+         */
+        function exportAllTeacherSchedulesToCsv() {
+            if (appData.teachers.length === 0) {
+                showMessage('No hay profesores para exportar horarios.');
+                return;
+            }
+            if (appData.timeSlots.length === 0) {
+                showMessage('No hay tramos horarios definidos para exportar.');
+                return;
+            }
+
+            const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+            const commonHeaders = ['Tramo Horario'].concat(daysOfWeek); // Headers for each individual schedule table
+            let allCsvRows = [];
+
+            appData.teachers.forEach(teacher => {
+                const teacherName = `${teacher.firstName} ${teacher.lastName}`;
+                
+                // Add a blank row for separation
+                if (allCsvRows.length > 0) {
+                    allCsvRows.push({}); 
+                }
+
+                // Add a header row indicating the teacher
+                allCsvRows.push({ 'Tramo Horario': `Horario de Profesor: ${teacherName}` });
+                
+                // Add the common headers for the schedule table
+                allCsvRows.push(Object.fromEntries(commonHeaders.map(h => [h, h]))); // Create an object with headers as keys and values
+
+                const allUniqueTimeSlots = Array.from(new Set(appData.timeSlots.map(ts => ts.id)))
+                    .map(id => appData.timeSlots.find(ts => ts.id === id))
+                    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+                allUniqueTimeSlots.forEach(slot => {
+                    const row = { 'Tramo Horario': `${slot.startTime}-${slot.endTime}` };
+                    daysOfWeek.forEach((dayName, index) => {
+                        const dayIndex = index + 1; // 1 for Lunes, etc.
+                        let cellContent = '';
+                        if (slot.isRecess) {
+                            cellContent = 'RECREO';
+                        } else {
+                            const activitiesInSlot = appData.schedules.filter(s =>
+                                s.teacherId === teacher.id && s.dayOfWeek === dayIndex && s.timeSlotId === slot.id
+                            ).concat(
+                                appData.nonLectivaHours.filter(h =>
+                                    h.teacherId === teacher.id && h.dayOfWeek === dayIndex && h.timeSlotId === slot.id
+                                )
+                            ).sort((a, b) => {
+                                if (a.subjectId && b.subjectId) return 0;
+                                if (a.subjectId) return -1;
+                                if (b.subjectId) return 1;
+                                return 0;
+                            });
+
+                            if (activitiesInSlot.length > 0) {
+                                cellContent = activitiesInSlot.map(entry => {
+                                    if (entry.subjectId) {
+                                        const course = appData.courses.find(c => c.id === entry.courseId);
+                                        const subject = appData.subjects.find(s => s.id === entry.subjectId);
+                                        const groupDisplay = entry.groupName ? ` (${entry.groupName})` : '';
+                                        const typeLabel = entry.isSupportTeacher ? 'Apoyo' : 'Clase';
+                                        return `${typeLabel}: ${subject?.name || 'N/A'} - ${course?.name || 'N/A'}${groupDisplay}`;
+                                    } else {
+                                        const typeDisplay = entry.type === 'support' ? 'Apoyo' : entry.type === 'coordination' ? 'Coordinación' : 'Reunión';
+                                        return `No Lectiva: ${entry.description} (${typeDisplay})`;
+                                    }
+                                }).join(' | ');
+                            } else {
+                                cellContent = 'Libre';
+                            }
+                        }
+                        row[dayName] = cellContent;
+                    });
+                    allCsvRows.push(row); // Add the data row for this time slot
+                });
+            });
+
+            // Convert the accumulated rows into a CSV string
+            // We need a custom convertToCsv that handles the interspersed headers
+            const finalCsvString = allCsvRows.map(row => {
+                // If it's a special header row (like "Horario de Profesor"), it won't have all commonHeaders as keys
+                // We need to ensure the order and fill missing with empty strings
+                if (row['Tramo Horario'] && !daysOfWeek.every(day => row.hasOwnProperty(day))) {
+                    // This is a special header row or the initial common header row
+                    // If it's the "Horario de Profesor" row, only output its value in the first column
+                    if (row['Tramo Horario'].startsWith('Horario de Profesor:')) {
+                        return `"${row['Tramo Horario']}"`;
+                    }
+                    // Otherwise, it's the common header row, which is already handled by convertToCsv
+                    return commonHeaders.map(header => `"${header}"`).join(';');
+                } else {
+                    // This is a data row, use the commonHeaders to ensure correct order and fill missing
+                    return commonHeaders.map(header => {
+                        const value = row[header] !== undefined && row[header] !== null ? row[header] : '';
+                        return `"${String(value).replace(/"/g, '""')}"`;
+                    }).join(';');
+                }
+            }).join('\n');
+
+
+            const filename = `Todos_Horarios_Profesores_${new Date().toISOString().split('T')[0]}.csv`;
+            downloadFile(filename, finalCsvString, 'text/csv;charset=utf-8;');
+            showMessage('Todos los horarios de profesores exportados a Excel (CSV) con éxito.');
+        }
+
+        /**
+         * Exports all class schedules to a single CSV file, with each class's schedule separated.
+         */
+        function exportAllClassSchedulesToCsv() {
+            if (appData.courses.length === 0) {
+                showMessage('No hay cursos para exportar horarios.');
+                return;
+            }
+            if (appData.timeSlots.length === 0) {
+                showMessage('No hay tramos horarios definidos para exportar.');
+                return;
+            }
+
+            const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+            const commonHeaders = ['Tramo Horario'].concat(daysOfWeek); // Headers for each individual schedule table
+            let allCsvRows = [];
+
+            appData.courses.forEach(course => {
+                const courseName = course.name;
+
+                // Add a blank row for separation
+                if (allCsvRows.length > 0) {
+                    allCsvRows.push({});
+                }
+
+                // Add a header row indicating the class
+                allCsvRows.push({ 'Tramo Horario': `Horario de Clase: ${courseName}` });
+
+                // Add the common headers for the schedule table
+                allCsvRows.push(Object.fromEntries(commonHeaders.map(h => [h, h]))); // Create an object with headers as keys and values
+
+                const allUniqueTimeSlots = Array.from(new Set(appData.timeSlots.map(ts => ts.id)))
+                    .map(id => appData.timeSlots.find(ts => ts.id === id))
+                    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+                allUniqueTimeSlots.forEach(slot => {
+                    const row = {
+                        'Tramo Horario': `${slot.startTime}-${slot.endTime}`
+                    };
+                    daysOfWeek.forEach((dayName, index) => {
+                        const dayIndex = index + 1;
+                        let cellContent = '';
+                        if (slot.isRecess) {
+                            cellContent = 'RECREO';
+                        } else {
+                            const classesInSlot = appData.schedules.filter(s =>
+                                s.courseId === course.id && s.dayOfWeek === dayIndex && s.timeSlotId === slot.id
+                            );
+
+                            if (classesInSlot.length > 0) {
+                                const groupedClasses = {};
+                                classesInSlot.forEach(s => {
+                                    if (!groupedClasses[s.subjectId]) groupedClasses[s.subjectId] = {};
+                                    const groupKey = s.groupName || 'main';
+                                    if (!groupedClasses[s.subjectId][groupKey]) groupedClasses[s.subjectId][groupKey] = [];
+                                    groupedClasses[s.subjectId][groupKey].push(s);
+                                });
+
+                                let activities = [];
+                                for (const subjectId in groupedClasses) {
+                                    const subject = appData.subjects.find(s => s.id === subjectId);
+                                    for (const groupKey in groupedClasses[subjectId]) {
+                                        const schedulesForGroup = groupedClasses[subjectId][groupKey];
+                                        const groupDisplay = groupKey !== 'main' ? ` (${groupKey})` : '';
+                                        let teachersDisplay = [];
+                                        schedulesForGroup.forEach(sch => {
+                                            const teacher = appData.teachers.find(t => t.id === sch.teacherId);
+                                            if (teacher) {
+                                                teachersDisplay.push(`${sch.isSupportTeacher ? 'Apoyo: ' : ''}${teacher.firstName} ${teacher.lastName}`);
+                                            }
+                                        });
+                                        activities.push(`${subject?.name || 'N/A'}${groupDisplay}: ${teachersDisplay.join(', ')}`);
+                                    }
+                                }
+                                cellContent = activities.join(' | ');
+                            } else {
+                                cellContent = 'Libre';
+                            }
+                        }
+                        row[dayName] = cellContent;
+                    });
+                    allCsvRows.push(row);
+                });
+            });
+
+            // Convert the accumulated rows into a CSV string
+            const finalCsvString = allCsvRows.map(row => {
+                if (row['Tramo Horario'] && !daysOfWeek.every(day => row.hasOwnProperty(day))) {
+                    if (row['Tramo Horario'].startsWith('Horario de Clase:')) {
+                        return `"${row['Tramo Horario']}"`;
+                    }
+                    return commonHeaders.map(header => `"${header}"`).join(';');
+                } else {
+                    return commonHeaders.map(header => {
+                        const value = row[header] !== undefined && row[header] !== null ? row[header] : '';
+                        return `"${String(value).replace(/"/g, '""')}"`;
+                    }).join(';');
+                }
+            }).join('\n');
+
+            const filename = `Todos_Horarios_Clases_${new Date().toISOString().split('T')[0]}.csv`;
+            downloadFile(filename, finalCsvString, 'text/csv;charset=utf-8;');
+            showMessage('Todos los horarios de clases exportados a Excel (CSV) con éxito.');
+        }
+
+
+        // --- Inicialización ---
+        document.addEventListener('DOMContentLoaded', loadData);
+
+        // Se mantiene la carga de sujetos y tramos por etapa
+        document.getElementById('select-stage-subject').addEventListener('change', loadSubjectsForSelectedStage);
+        document.getElementById('select-stage-timeslot').addEventListener('change', loadTimeSlotsForSelectedStage);
+
+        // El cambio de profesor en la vista semanal sigue disparando la carga del horario
+        document.getElementById('select-teacher-schedule').addEventListener('change', loadTeacherSchedule);
+
+        // Class schedule view change
+        document.getElementById('select-course-schedule').addEventListener('change', loadClassSchedule);
+
+    </script>
+</body>
+</html>
